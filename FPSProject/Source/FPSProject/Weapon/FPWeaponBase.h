@@ -22,6 +22,15 @@ enum class EFPWeaponType : uint8
 	WT_Throwable UMETA(DisplayName = "Throwable"),
 };
 
+UENUM()
+enum class EFPWeaponFireType : uint8
+{
+	WFT_None UMETA(DisplayName = "None"),
+	WFT_Auto UMETA(DisplayName = "Auto"),
+	WFT_Semi UMETA(DisplayName = "Semi"),
+	WFT_Burst UMETA(DisplayName = "Burst"),
+};
+
 UCLASS(Blueprintable)
 class FPSPROJECT_API AFPWeaponBase : public AActor
 {
@@ -31,6 +40,7 @@ class FPSPROJECT_API AFPWeaponBase : public AActor
 public:	
 	AFPWeaponBase();
 	virtual void Destroyed() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -82,20 +92,26 @@ public:
 	EFPWeaponType GetType() const { return Type; }
 	float GetBeforeFireTime() const { return BeforeFireTime; }
 	
-private:
+protected:
 	EFPWeaponType Type			= EFPWeaponType::WT_None;
 	float Damage				= 30.0f;
 	float Accuracy				= 0.3f;
 	float Magazine				= 30.0f;
-	float RPM					= 600.0f;
+	float RPM					= 10.0f;
 	int32 Price					= 2700;
 	int32 MaxAmmo				= 30;
-	int32 CurrentAmmo			= MaxAmmo;
 	int32 MaxRemainingAmmo		= 120;
+
+	UPROPERTY(ReplicatedUsing=OnRep_ReplicateCurrentAmmo)
+	int32 CurrentAmmo			= MaxAmmo;
 	int32 CurrentRemainingAmmo	= MaxRemainingAmmo;
 
-	float FireDelay = 0;		// 총기 발사 간격 내부 쿨타임
+	// 클라이언트에서 서버로 보내는 명령의 수를 제한함과 동시에,
+	// 서버에서 무기의 공격 시간을 체크함으로써 치트를 사용하여 총의 연사속도를 변경하는 것을 막기 위한 설계
+	float FireDelay = 0;		// 총기 발사 간격 내부 쿨타임(클라이언트)
 	float BeforeFireTime = 0;	// 총기 발사 시 서버에서 현재 시간과 이전 시간을 비교하기 위한 변수
+	float CurrentFireTime = 0;
+
 	
 	// 무기 Mesh 관련 변수
 public:
@@ -105,6 +121,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* ThirdPersonMesh;
 
+protected:
+	UFUNCTION()
+	virtual void OnRep_ReplicateCurrentAmmo();
+	
 	// 무기 Animation 섹션
 protected:
 	virtual void PlayAnimationAttack();

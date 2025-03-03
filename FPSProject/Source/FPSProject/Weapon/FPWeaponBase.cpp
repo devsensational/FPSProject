@@ -6,11 +6,13 @@
 #include "FPSProject.h"
 #include "Character/FPCharacterBase.h"
 #include "Game/FPGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AFPWeaponBase::AFPWeaponBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+    bReplicates = true;
 
 	// 1인칭용 메시
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
@@ -50,6 +52,13 @@ void AFPWeaponBase::Destroyed()
 	}
 }
 
+void AFPWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPWeaponBase, CurrentAmmo)
+}
+
 
 void AFPWeaponBase::BeginPlay()
 {
@@ -77,11 +86,17 @@ void AFPWeaponBase::SetSphereCollisionEnabled(bool bEnabled) const
 
 
 // 장비 상호작용(공격, 장비 등) 섹션
+// 공격 실행
 void AFPWeaponBase::Attack()
 {
-	// Todo: 실제 공격 로직 (탄약 감소, 총알 발사, 데미지 계산 등)
-	if (CurrentAmmo <= 0) return;
+	// WeaponBase에는 공격이 없음
+	// Todo: 하위 클래스에서 실제 공격 로직을 구현할 것(탄약 감소, 총알 발사, 데미지 계산 등)
+}
 
+// 현재 탄약이 서버에서 변경 시 클라이언트에게 전파
+void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
+{
+	LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
 }
 
 void AFPWeaponBase::PlayAnimationAttack()
