@@ -23,6 +23,9 @@ public:
 	virtual void Reload() override;
 
 protected:
+	virtual void HitScanAttack();
+
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* ImpactEffect;
 };

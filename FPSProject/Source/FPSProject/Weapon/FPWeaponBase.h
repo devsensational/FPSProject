@@ -95,11 +95,11 @@ public:
 protected:
 	EFPWeaponType Type			= EFPWeaponType::WT_None;
 	float Damage				= 30.0f;
-	float Accuracy				= 0.3f;
+	float Accuracy				= 30.0f;
 	float Magazine				= 30.0f;
-	float RPM					= 10.0f;
+	float RPM					= 100.0f;
 	int32 Price					= 2700;
-	int32 MaxAmmo				= 30;
+	int32 MaxAmmo				= 500;
 	int32 MaxRemainingAmmo		= 120;
 
 	UPROPERTY(ReplicatedUsing=OnRep_ReplicateCurrentAmmo)

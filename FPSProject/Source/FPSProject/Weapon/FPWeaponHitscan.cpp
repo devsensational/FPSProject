@@ -28,19 +28,38 @@ void AFPWeaponHitscan::Attack()
 	BeforeFireTime = CurrentFireTime;
 	CurrentAmmo = FMath::Clamp(CurrentAmmo - 1, 0, MaxAmmo);
 	
+	HitScanAttack();
 	
-	/* 히트스캔방식 공격 구현 */
+}
+
+void AFPWeaponHitscan::Reload()
+{
+	Super::Reload();
+}
+
+//히트스캔방식 공격 구현
+void AFPWeaponHitscan::HitScanAttack()
+{
 	// 플레이어가 조작하는 컨트롤러 가져오기
 	APlayerController* PlayerController = Cast<APlayerController>(WeaponOwner->GetController());
 	if (!PlayerController) return;
 
-	FVector CameraLocation;
+	FVector CameraLocation;		
 	FRotator CameraRotation;
 	PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
 
+	// 정확도에 따른 랜덤 오차 적용
+	float RandomX = FMath::FRandRange(-Accuracy, Accuracy);
+	float RandomY = FMath::FRandRange(-Accuracy, Accuracy);
+
+	FVector RightVector = FRotationMatrix(CameraRotation).GetScaledAxis(EAxis::Y);
+	FVector UpVector = FRotationMatrix(CameraRotation).GetScaledAxis(EAxis::Z);
+	
+	
 	// 트레이스 시작점 (총구 위치) 및 방향 설정
 	FVector TraceStart = CameraLocation;
-	FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 10000.0f); // 10,000cm = 100m
+	//FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 10000.0f); // 10,000cm = 100m
+	FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 10000.0f) + (RightVector * RandomX) + (UpVector * RandomY);
 
 	FHitResult HitResult;
 	FCollisionQueryParams QueryParams;
@@ -74,9 +93,4 @@ void AFPWeaponHitscan::Attack()
 	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 1.0f);
 #endif
 	
-}
-
-void AFPWeaponHitscan::Reload()
-{
-	Super::Reload();
 }
