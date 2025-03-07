@@ -120,7 +120,7 @@ void AFPWeaponBase::Equip(TObjectPtr<AFPCharacterBase> NewOwner)
 	if (bIsOwned) return;
 	
 	// Todo: 장비자에 대한 레퍼런스를 설정
-	WeaponOwner = NewOwner;
+	SetOwner(NewOwner);
 	bIsOwned = true;
 	SetSphereCollisionEnabled(true);
 	
@@ -131,7 +131,7 @@ void AFPWeaponBase::UnEquip()
 {
 	// Todo: 장비자에 대한 레퍼런스 해제
 
-	WeaponOwner = nullptr;
+	SetOwner(nullptr);
 	bIsOwned = false;
 	SetSphereCollisionEnabled(false);
 	

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FWeaponStats.h"
+#include "FPWeaponStats.h"
 #include "UObject/NoExportTypes.h"
 #include "FPGameSingleton.generated.h"
 
@@ -26,7 +26,7 @@ public:
 	UDataTable* WeaponDataTable;
 	
 public:
-	FORCEINLINE FWeaponStats* GetWeaponStat(FName Name) const { return WeaponStatsMap[Name];} // 안전한 검사가 가능하도록 변경해야함
+	FORCEINLINE FPWeaponStats* GetWeaponStat(FName Name) const { return WeaponStatsMap[Name];} // 안전한 검사가 가능하도록 변경해야함
 private:
-	TMap<FName, FWeaponStats*> WeaponStatsMap;
+	TMap<FName, FPWeaponStats*> WeaponStatsMap;
 };

@@ -5,14 +5,15 @@
 #include "DrawDebugHelpers.h"
 #include "FPSProject.h"
 #include "Character/FPCharacterBase.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Physics/FPCollision.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
 void AFPWeaponHitscan::Attack()
 {
 	Super::Attack();
-	LOG_NET(NetworkLog, Log, TEXT("%d:Try Hitscan Attack"), GetUniqueID());
 	
 	/* 기본 공격 수행 로직 */
 	if (CurrentAmmo <= 0) return; // 총알이 없을 시 실행안함
@@ -21,15 +22,15 @@ void AFPWeaponHitscan::Attack()
 	// GetTimeSeconds()는 45일동안 같은 레벨에서 실행될 경우 부동소수점 문제가 발생할 수 있음
 	// 따라서 MMORPG처럼 시간 제한이 없는 게임에서는 GetRealTimeSeconds()를 고려해볼 수 잇음
 	
-	LOG_NET(NetworkLog, Log, TEXT("Before:%f, Current:%f, RPM:%f"), BeforeFireTime, CurrentFireTime, 1 / (RPM / 60.0f));
-	
 	if (CurrentFireTime - BeforeFireTime < 1 / (RPM / 60.0f)) return; // 서버에서 발사 속도 제한
 
 	BeforeFireTime = CurrentFireTime;
 	CurrentAmmo = FMath::Clamp(CurrentAmmo - 1, 0, MaxAmmo);
+
+	if (HasAuthority()) OnRep_ReplicateCurrentAmmo(); //서버의 경우
 	
 	HitScanAttack();
-	
+	LOG_NET(NetworkLog, Log, TEXT("%d:Hitscan Attack"), GetUniqueID());
 }
 
 void AFPWeaponHitscan::Reload()
@@ -41,7 +42,7 @@ void AFPWeaponHitscan::Reload()
 void AFPWeaponHitscan::HitScanAttack()
 {
 	// 플레이어가 조작하는 컨트롤러 가져오기
-	APlayerController* PlayerController = Cast<APlayerController>(WeaponOwner->GetController());
+	APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController());
 	if (!PlayerController) return;
 
 	FVector CameraLocation;		
@@ -72,19 +73,37 @@ void AFPWeaponHitscan::HitScanAttack()
 		HitResult,
 		TraceStart,
 		TraceEnd,
-		ECC_Visibility, // 충돌 채널 설정 (가시성)
+		CCHANNEL_FPHITSCAN, // 충돌 채널 설정
 		QueryParams
 	);
 
 	if (bHit)
 	{
-		// 적중한 오브젝트가 있으면 로그 출력
-		UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
-		
-		if (ImpactEffect) // nullptr 체크
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor)
 		{
-			// 피격 위치에 효과 적용
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint);
+			UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitActor->GetName());
+
+			AFPCharacterBase* HitCharacter = Cast<AFPCharacterBase>(HitActor);
+			if (HitCharacter)
+			{
+				// 피해 정보를 담은 FPointDamageEvent 생성
+				FPointDamageEvent DamageEvent;
+				DamageEvent.Damage = Damage;
+				DamageEvent.HitInfo = HitResult;
+				DamageEvent.ShotDirection = CameraRotation.Vector();
+				DamageEvent.DamageTypeClass = UDamageType::StaticClass();
+				
+				HitCharacter->TakeDamage(Damage, FDamageEvent(), PlayerController, this);
+				
+				UE_LOG(LogTemp, Log, TEXT("[Weapon] %s dealt %f damage to %s"), 
+								*GetOwner()->GetName(), Damage, *HitCharacter->GetName());
+			}
+			
+			if (ImpactEffect)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint);
+			}
 		}
 	}
 

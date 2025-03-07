@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "FWeaponStats.generated.h"
+#include "FPWeaponStats.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWeaponStats : public FTableRowBase
+struct FPWeaponStats : public FTableRowBase
 {
 	GENERATED_BODY()
 

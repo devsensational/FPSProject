@@ -17,11 +17,9 @@ class FPSPROJECT_API AFPCharacterBase : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AFPCharacterBase();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
@@ -31,13 +29,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/* 캐릭터 Collision 섹션 추가 */
+	/* 캐릭터 Collision 섹션 */
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 	USphereComponent* CollisionSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
 	float CollisionRadius = 100.0f;
+
 	
 protected:
 	UFUNCTION()
@@ -45,11 +44,25 @@ protected:
 
 	UFUNCTION()
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	/* 히트박스 섹션 */
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
+	UCapsuleComponent* HitBoxCollision;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
+	float HitBoxSize = 100.0f;
+	
+	//UFUNCTION()
+	//void OnCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	//UFUNCTION()
+	//void OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 private:
 	void SetCollisionProfile(); //콜리전 Profile 설정
 
-	// 캐릭터 무기 조작 관련 섹션
+	/* 캐릭터 무기 조작 관련 섹션 */
 public:
 	void Attack();
 	void Reload();
@@ -61,7 +74,7 @@ protected:
 	void PerformAttack();
 	
 	
-	// 캐릭터 무기 소유 관련 섹션
+	/* 캐릭터 무기 소유 관련 섹션 */
 public:
 	void EquipWeapon(EFPWeaponType InWeaponType);
 	void UnequipWeapon();
@@ -98,7 +111,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(); // 모든 클라이언트에게 무기 장비 적용
 	
-	//캐릭터 스탯 관련 섹션
+	/* 캐릭터 스탯 관련 섹션 */
 public:
 	// 데이터 에셋 (서버에서만 설정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
@@ -117,6 +130,10 @@ public:
 	void ServerModifyStat(float HealthDelta, float AttackDelta);
 	void ServerModifyStat_Implementation(float HealthDelta, float AttackDelta);
 	bool ServerModifyStat_Validate(float HealthDelta, float AttackDelta);
+
+	/* 캐릭터 피격 판정 섹션 */
+public:
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 public:
 	//3인칭 Mesh

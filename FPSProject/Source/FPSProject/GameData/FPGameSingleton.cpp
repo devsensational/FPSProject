@@ -20,7 +20,7 @@ UFPGameSingleton::UFPGameSingleton()
 			for (const FName& RowName : RowNames)
 			{
 				// FindRow를 사용하여 안전하게 행 데이터 가져오기
-				FWeaponStats* WeaponStats = WeaponDataTable->FindRow<FWeaponStats>(RowName, TEXT(""));
+				FPWeaponStats* WeaponStats = WeaponDataTable->FindRow<FPWeaponStats>(RowName, TEXT(""));
 
 				if (WeaponStats)
 				{
@@ -32,7 +32,7 @@ UFPGameSingleton::UFPGameSingleton()
 			for (const auto& WeaponPair : WeaponStatsMap)
 			{
 				FName WeaponName = WeaponPair.Key;
-				FWeaponStats* WeaponStats = WeaponPair.Value;
+				FPWeaponStats* WeaponStats = WeaponPair.Value;
 
 				if (WeaponStats)
 				{

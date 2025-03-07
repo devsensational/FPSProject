@@ -59,14 +59,12 @@ private:
 	
 	/* 무기 오너 관련 섹션 */
 protected:
-	UPROPERTY()
-	TObjectPtr<AFPCharacterBase> WeaponOwner = nullptr; // 무기 소유자 레퍼런스
+	//UPROPERTY()
+	//TObjectPtr<AFPCharacterBase> WeaponOwner = nullptr; // 무기 소유자 레퍼런스
 
 public:
 	UPROPERTY()
 	uint8 bIsOwned = false;
-	
-	TObjectPtr<AFPCharacterBase> GetWeaponOwner() const { return WeaponOwner; }
 
 	
 	/* 무기 상호작용 관련 섹션 */
@@ -97,7 +95,7 @@ protected:
 	float Damage				= 30.0f;
 	float Accuracy				= 30.0f;
 	float Magazine				= 30.0f;
-	float RPM					= 100.0f;
+	float RPM					= 300.0f;
 	int32 Price					= 2700;
 	int32 MaxAmmo				= 500;
 	int32 MaxRemainingAmmo		= 120;

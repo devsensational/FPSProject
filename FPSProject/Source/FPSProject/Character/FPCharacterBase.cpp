@@ -5,9 +5,11 @@
 #include "Character/FPCharacterBase.h"
 
 #include "FPSProject.h"
+#include "Components/CapsuleComponent.h"
 #include "Game/FPGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Physics/FPCollision.h"
 #include "Weapon/FPWeaponBase.h"
 
 AFPCharacterBase::AFPCharacterBase()
@@ -23,6 +25,12 @@ AFPCharacterBase::AFPCharacterBase()
 	CollisionSphere->SetSphereRadius(CollisionRadius); // 반지름 설정
 	CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
 	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
+
+	HitBoxCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HitBoxCollision"));
+	HitBoxCollision->SetupAttachment(RootComponent);
+	HitBoxCollision->SetCapsuleHalfHeight(HitBoxSize);
+	HitBoxCollision->SetHiddenInGame(false);
+	HitBoxCollision->SetGenerateOverlapEvents(true);
 	
 	SetCollisionProfile(); // 콜리전 프로필 설정
 
@@ -59,7 +67,7 @@ void AFPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 // 체력이 변경될 때 실행 (클라이언트에서 업데이트)
 void AFPCharacterBase::OnRep_CurrentHealth()
 {
-	UE_LOG(LogTemp, Log, TEXT("CurrentHealth Updated: %f"), CurrentHealth);
+	LOG_NET(NetworkLog, Log, TEXT("CurrentHealth Updated: %f"), CurrentHealth);
 
 	//ToDo: UI 업데이트 필요 시 여기서 처리
 }
@@ -80,6 +88,24 @@ void AFPCharacterBase::ServerModifyStat_Implementation(float HealthDelta, float 
 bool AFPCharacterBase::ServerModifyStat_Validate(float HealthDelta, float AttackDelta)
 {
 	return FMath::Abs(HealthDelta) < 1000.0f && FMath::Abs(AttackDelta) < 1000.0f;
+}
+
+float AFPCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (!HasAuthority()) return 0.0f; // 서버에서만 실행
+
+	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, CharacterStats->MaxHealth);
+	UE_LOG(LogTemp, Log, TEXT("Character %s took %f damage, Remaining Health: %f"), *GetName(), DamageAmount, CurrentHealth);
+
+	if (CurrentHealth <= 0)
+	{
+		// ToDo: 사망 처리
+		UE_LOG(LogTemp, Log, TEXT("%s has died"), *GetName());
+	}
+
+	OnRep_CurrentHealth(); // 클라이언트에 체력 동기화
+	return DamageAmount;
 }
 
 // 네트워크 복제 설정
@@ -129,6 +155,7 @@ void AFPCharacterBase::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompone
 void AFPCharacterBase::SetCollisionProfile()
 {
 	CollisionSphere->SetCollisionProfileName(TEXT("WeaponPreset"));
+	HitBoxCollision->SetCollisionProfileName(CPROFILE_FPHITBOX);
 }
 
 
@@ -173,7 +200,6 @@ void AFPCharacterBase::PerformAttack()
 	{
 		CurrentWeapon->Attack();
 	}
-	LOG_NET(NetworkLog, Log, TEXT(""));
 }
 
 
