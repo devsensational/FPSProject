@@ -7,6 +7,7 @@
 #include "Interface/FPSpawnManagerInterface.h"
 #include "Level/FPSpawnManagerBase.h"
 #include "Weapon/FPWeaponBase.h"
+#include "Character/FPCharacterBase.h"
 
 AFPGameMode::AFPGameMode()
 {
@@ -113,19 +114,78 @@ void AFPGameMode::StartPlay()
 
 }
 
-void AFPGameMode::RegisterWeaponID(AFPWeaponBase* InWeapon)
+void AFPGameMode::RegisterCharacterID(AFPCharacterBase* InCharacterReference)
 {
-	if (InWeapon)
+	if (!InCharacterReference)
 	{
-		WeaponMap.Add(InWeapon->GetUniqueID(), InWeapon);
+		LOG_NET(NetworkLog, Warning, TEXT("Invalid Character Reference"));
+		return;
 	}
+
+	int32 CharacterID = InCharacterReference->GetUniqueID();
+	CharacterMap.Add(CharacterID, InCharacterReference);
+	CharacterList.Add(InCharacterReference);
+	
+	LOG_NET(NetworkLog, Log, TEXT("%d: Register Character"), CharacterID);
 }
 
-void AFPGameMode::UnRegisterWeaponID(const AFPWeaponBase* InWeapon)
+void AFPGameMode::UnregisterCharacterReference(const AFPCharacterBase* InCharacterReference)
 {
-	if (InWeapon)
+	if (!InCharacterReference)
 	{
-		int32 WeaponID = InWeapon->GetUniqueID();
+		LOG_NET(NetworkLog, Warning, TEXT("Invalid Character Reference"));
+		return;
+	}
+
+	int32 CharacterID = InCharacterReference->GetUniqueID();
+	if (!CharacterMap.Contains(CharacterID)) { return; }
+	if (!CharacterList.Contains(InCharacterReference)) { return; }
+	
+	CharacterList.RemoveAll([InCharacterReference](const TObjectPtr<AFPCharacterBase>& Character)
+	{
+		return Character.Get() == InCharacterReference;
+	});
+	
+	CharacterMap.Remove(CharacterID);
+	
+	LOG_NET(NetworkLog, Log, TEXT("%d: Unregister Character"), CharacterID);
+}
+
+void AFPGameMode::UnregisterCharacterReference(const int32 InCharacterID)
+{
+	if (!CharacterMap.Contains(InCharacterID))
+	{
+		LOG_NET(NetworkLog, Warning, TEXT("Invalid Character ID: %d"), InCharacterID);
+		return;
+	}
+	
+	AFPCharacterBase* CharacterReference = CharacterMap[InCharacterID];
+	if (!CharacterList.Contains(CharacterReference)) { return; }
+	CharacterList.RemoveAll([CharacterReference](const TObjectPtr<AFPCharacterBase>& Character)
+	{
+		return Character.Get() == CharacterReference;
+	});
+	
+	CharacterMap.Remove(InCharacterID);
+	
+	LOG_NET(NetworkLog, Log, TEXT("%d: Unregister Character"), InCharacterID);
+}
+
+void AFPGameMode::RegisterWeaponID(AFPWeaponBase* InWeaponReference)
+{
+	if (InWeaponReference)
+	{
+		WeaponMap.Add(InWeaponReference->GetUniqueID(), InWeaponReference);
+	}
+	
+	LOG_NET(NetworkLog, Log, TEXT("Register Weapon"));
+}
+
+void AFPGameMode::UnregisterWeaponID(const AFPWeaponBase* InWeaponReference)
+{
+	if (InWeaponReference)
+	{
+		int32 WeaponID = InWeaponReference->GetUniqueID();
 		if (WeaponMap.Contains(WeaponID))
 		{
 			WeaponMap.Remove(WeaponID);
@@ -133,7 +193,7 @@ void AFPGameMode::UnRegisterWeaponID(const AFPWeaponBase* InWeapon)
 	}
 }
 
-void AFPGameMode::UnRegisterWeaponID(int32 InWeaponID)
+void AFPGameMode::UnregisterWeaponID(int32 InWeaponID)
 {
 	if (WeaponMap.Contains(InWeaponID))
 	{

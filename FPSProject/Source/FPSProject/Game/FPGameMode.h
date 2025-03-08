@@ -5,9 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/FPSpawnManagerInterface.h"
+
+class AFPCharacterBase;
+class AFPWeaponBase;
+class AFPSpawnManagerBase;
+
 #include "FPGameMode.generated.h"
 
-class AFPWeaponBase;
 /**
  * 
  */
@@ -29,15 +33,28 @@ private:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void StartPlay() override;
 
-	/* 무기 NetGUID 매핑 섹션 */
+	/* 캐릭터 NetGUID 맵핑 섹션 */
 private:
 	UPROPERTY()
-	TMap<int32, AFPWeaponBase*> WeaponMap;
+	TMap<int32, TObjectPtr<AFPCharacterBase>> CharacterMap;
+
+	UPROPERTY()
+	TArray<TObjectPtr<AFPCharacterBase>> CharacterList;
 
 public:
-	void RegisterWeaponID(AFPWeaponBase* InWeapon);
-	void UnRegisterWeaponID(const AFPWeaponBase* InWeapon);
-	void UnRegisterWeaponID(int32 InWeaponID);
+	void RegisterCharacterID(AFPCharacterBase* InCharacterReference);
+	void UnregisterCharacterReference(const AFPCharacterBase* InCharacterReference);
+	void UnregisterCharacterReference(const int32 InCharacterID);
+	
+	/* 무기 NetGUID 맵핑 섹션 */
+private:
+	UPROPERTY()
+	TMap<int32, TObjectPtr<AFPWeaponBase>> WeaponMap;
+
+public:
+	void RegisterWeaponID(AFPWeaponBase* InWeaponReference);
+	void UnregisterWeaponID(const AFPWeaponBase* InWeaponReference);
+	void UnregisterWeaponID(int32 InWeaponID);
 	
 	AFPWeaponBase*  GetWeaponByID(int32 InWeaponID);
 

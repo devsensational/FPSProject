@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "FPCharacterBase.generated.h"
 
+class AFPGameMode;
 class AFPWeaponBase;
 enum class EFPWeaponType : uint8;
 
@@ -21,14 +22,21 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	/* 서버용 로직 섹션 */
+	UPROPERTY()
+	TObjectPtr<AFPGameMode> GameMode;
+	
+	virtual void ServerInitializeActor();
+	
 	/* 캐릭터 Collision 섹션 */
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
@@ -36,7 +44,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
 	float CollisionRadius = 100.0f;
-
 	
 protected:
 	UFUNCTION()
@@ -72,7 +79,6 @@ protected:
 	void ServerAttack();
 
 	void PerformAttack();
-	
 	
 	/* 캐릭터 무기 소유 관련 섹션 */
 public:

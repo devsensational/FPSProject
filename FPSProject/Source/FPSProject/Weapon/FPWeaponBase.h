@@ -8,9 +8,11 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "Game/FPGameMode.h"
-#include "FPWeaponBase.generated.h"
 
 class AFPCharacterBase;
+
+#include "FPWeaponBase.generated.h"
+
 
 UENUM()
 enum class EFPWeaponType : uint8

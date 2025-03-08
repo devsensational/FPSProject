@@ -47,7 +47,7 @@ void AFPWeaponBase::Destroyed()
 		if (GameMode)
 		{
 			GameMode = GetWorld()->GetAuthGameMode<AFPGameMode>();
-			GameMode->UnRegisterWeaponID(this);
+			GameMode->UnregisterWeaponID(this);
 		}
 	}
 }

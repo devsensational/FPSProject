@@ -27,7 +27,7 @@ void AFPSpawnPoint::Init()
 	Super::BeginPlay();
 	LOG_NET(NetworkLog, Log, TEXT("Created Spawn Point"));
 
-	// Todo: 스폰매니저 레퍼런스 지정
+	//스폰매니저 레퍼런스 지정
 	if (UWorld* World = GetWorld())
 	{
 		if (AFPGameMode* GameMode = Cast<AFPGameMode>(World->GetAuthGameMode()))

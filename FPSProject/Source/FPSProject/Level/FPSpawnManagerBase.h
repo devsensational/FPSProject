@@ -22,7 +22,7 @@ protected:
 	/* 스폰 포인트 섹션 */
 protected:
 	UPROPERTY()
-	TArray<TObjectPtr<class AFPSpawnPoint>> SpawnPointList;
+	TArray<TObjectPtr<AFPSpawnPoint>> SpawnPointList;
 
 public:
 	virtual void RegisterSpawnPoint(AFPSpawnPoint* SpawnPoint) override;			// 스폰 포인트 등록

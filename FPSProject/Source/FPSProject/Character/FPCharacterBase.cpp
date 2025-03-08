@@ -41,20 +41,50 @@ void AFPCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority() && CharacterStats)  // 서버에서만 실행
+	if (HasAuthority())  // 서버에서만 실행
 	{
-		CurrentHealth = CharacterStats->MaxHealth;
+		ServerInitializeActor();
 	}
 	
-	// 오버랩 이벤트 바인딩
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereBeginOverlap);
-	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereEndOverlap);
+}
+
+void AFPCharacterBase::Destroyed()
+{
+	Super::Destroyed();
+
+	if (HasAuthority())
+	{
+		GameMode->UnregisterCharacterReference(this);
+	}
 }
 
 void AFPCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AFPCharacterBase::ServerInitializeActor()
+{
+	// 오버랩 이벤트 바인딩
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereBeginOverlap);
+	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereEndOverlap);
+
+	// 게임모드 레퍼런스 바인딩
+	GameMode = Cast<AFPGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->RegisterCharacterID(this);
+	}
+	else
+	{
+		LOG_NET(NetworkLog, Warning, TEXT("Cannot load Gamemode"));
+	}
+	
+	if (CharacterStats)
+	{
+		CurrentHealth = CharacterStats->MaxHealth;
+	}
 }
 
 // Called to bind functionality to input
