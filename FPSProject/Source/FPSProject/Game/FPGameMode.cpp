@@ -51,7 +51,7 @@ void AFPGameMode::PreLogin(const FString& Options, const FString& Address, const
 	LOG_NET(NetworkLog, Log, TEXT("%s"), TEXT("End"));
 }
 
-//PreLogin()이 성공적으로 끝난 후, 플레이어가 서버에 최종적으로 연결을 시도할 때 호출됩니다.
+// PreLogin()이 성공적으로 끝난 후, 플레이어가 서버에 최종적으로 연결을 시도할 때 호출됩니다.
 // 서버에 플레이어 컨트롤러(PlayerController)를 생성하여 플레이어를 서버 세션에 추가합니다.
 // 플레이어의 인증 정보나 옵션을 기반으로 추가적인 검증 또는 처리를 수행할 수 있습니다.
 // 서버: 호출됨,클라이언트: 호출되지 않음

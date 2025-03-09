@@ -5,6 +5,7 @@
 #include "Character/FPCharacterBase.h"
 
 #include "FPSProject.h"
+#include "CharacterStat/FPCharacterStatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Game/FPGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -33,6 +34,9 @@ AFPCharacterBase::AFPCharacterBase()
 	HitBoxCollision->SetGenerateOverlapEvents(true);
 	
 	SetCollisionProfile(); // 콜리전 프로필 설정
+	
+	// 컴포넌트를 생성하고, 기본 소유 액터(캐릭터)에 부착
+	CharacterStatComponent = CreateDefaultSubobject<UFPCharacterStatComponent>(TEXT("CharacterStatComponent"));
 
 }
 
@@ -51,7 +55,14 @@ void AFPCharacterBase::BeginPlay()
 void AFPCharacterBase::Destroyed()
 {
 	Super::Destroyed();
-
+	
+#if WITH_EDITOR
+	if (GIsEditor && !GWorld->IsPlayInEditor())
+	{
+		return;
+	}
+#endif
+	
 	if (HasAuthority())
 	{
 		GameMode->UnregisterCharacterReference(this);
@@ -80,11 +91,20 @@ void AFPCharacterBase::ServerInitializeActor()
 	{
 		LOG_NET(NetworkLog, Warning, TEXT("Cannot load Gamemode"));
 	}
-	
-	if (CharacterStats)
+}
+
+float AFPCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (CharacterStatComponent)
 	{
-		CurrentHealth = CharacterStats->MaxHealth;
+		if (HasAuthority())  // 서버에서만 실행
+		{
+			CharacterStatComponent->ApplyDamage(DamageAmount);
+		}
 	}
+	
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 // Called to bind functionality to input
@@ -94,48 +114,15 @@ void AFPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
-// 체력이 변경될 때 실행 (클라이언트에서 업데이트)
-void AFPCharacterBase::OnRep_CurrentHealth()
-{
-	LOG_NET(NetworkLog, Log, TEXT("CurrentHealth Updated: %f"), CurrentHealth);
 
-	//ToDo: UI 업데이트 필요 시 여기서 처리
+void AFPCharacterBase::MulticastOnDeath_Implementation()
+{
+	PerformDeath();
 }
 
-// 서버에서만 실행되는 스탯 변경 함수
-void AFPCharacterBase::ServerModifyStat_Implementation(float HealthDelta, float AttackDelta)
+void AFPCharacterBase::PerformDeath()
 {
-	if (HasAuthority())  // 서버에서만 실행
-	{
-		CurrentHealth += HealthDelta;
-
-		// 변경된 값을 클라이언트와 동기화
-		OnRep_CurrentHealth();
-	}
-}
-
-// 유효성 검사 (너무 큰 값 제한)
-bool AFPCharacterBase::ServerModifyStat_Validate(float HealthDelta, float AttackDelta)
-{
-	return FMath::Abs(HealthDelta) < 1000.0f && FMath::Abs(AttackDelta) < 1000.0f;
-}
-
-float AFPCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
-{
-	if (!HasAuthority()) return 0.0f; // 서버에서만 실행
-
-	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, CharacterStats->MaxHealth);
-	UE_LOG(LogTemp, Log, TEXT("Character %s took %f damage, Remaining Health: %f"), *GetName(), DamageAmount, CurrentHealth);
-
-	if (CurrentHealth <= 0)
-	{
-		// ToDo: 사망 처리
-		UE_LOG(LogTemp, Log, TEXT("%s has died"), *GetName());
-	}
-
-	OnRep_CurrentHealth(); // 클라이언트에 체력 동기화
-	return DamageAmount;
+	// Todo: UI변경 및 캐릭터 사망 애니메이션 재생, 캐릭터 조작 불가능 하도록 변경
 }
 
 // 네트워크 복제 설정
@@ -143,7 +130,6 @@ void AFPCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AFPCharacterBase, CurrentHealth);
 }
 
 /* Collision 셋팅 */

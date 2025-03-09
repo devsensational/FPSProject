@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "FPCharacterBase.generated.h"
 
+class UFPCharacterStatComponent;
 class AFPGameMode;
 class AFPWeaponBase;
 enum class EFPWeaponType : uint8;
@@ -36,6 +37,14 @@ public:
 	TObjectPtr<AFPGameMode> GameMode;
 	
 	virtual void ServerInitializeActor();
+
+	/* 캐릭터 Stat Component 섹션 */
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stats")
+	UFPCharacterStatComponent* CharacterStatComponent;
+
+	UFUNCTION()
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override; 
 	
 	/* 캐릭터 Collision 섹션 */
 public:
@@ -117,29 +126,13 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(); // 모든 클라이언트에게 무기 장비 적용
 	
-	/* 캐릭터 스탯 관련 섹션 */
-public:
-	// 데이터 에셋 (서버에서만 설정)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	TObjectPtr<UFPCharacterStatData> CharacterStats;
+	// 캐릭터 사망 시 멀티캐스트
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastOnDeath();
 
-	// 현재 체력 (네트워크 동기화)
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth, VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-	float CurrentHealth;
+	// 캐릭터 사망 시 실제 구현부 (서버-클라이언트 모두 실행됨)
+	void PerformDeath();
 
-	// 체력 변경 시 클라이언트 반영
-	UFUNCTION()
-	void OnRep_CurrentHealth();
-
-	// 스탯 변경 함수 (서버에서 실행)
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerModifyStat(float HealthDelta, float AttackDelta);
-	void ServerModifyStat_Implementation(float HealthDelta, float AttackDelta);
-	bool ServerModifyStat_Validate(float HealthDelta, float AttackDelta);
-
-	/* 캐릭터 피격 판정 섹션 */
-public:
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 public:
 	//3인칭 Mesh
