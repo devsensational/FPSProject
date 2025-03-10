@@ -3,6 +3,8 @@
 
 #include "Player/FPPlayerController.h"
 #include "FPSProject.h"
+#include "Character/FPCharacterBase.h"
+#include "CharacterStat/FPCharacterStatComponent.h"
 
 DEFINE_LOG_CATEGORY(LogFPPlayerController);
 
@@ -52,6 +54,7 @@ void AFPPlayerController::BeginPlay()
 
 	FInputModeGameOnly GameOnlyInputMode;
 	SetInputMode(GameOnlyInputMode);
+
 }
 
 void AFPPlayerController::OnPossess(APawn* InPawn)
@@ -59,6 +62,6 @@ void AFPPlayerController::OnPossess(APawn* InPawn)
 	LOG_NET(NetworkLog, Log, TEXT("%s"), TEXT("Begin"));
 
 	Super::OnPossess(InPawn);
-
+	
 	LOG_NET(NetworkLog, Log, TEXT("%s"), TEXT("End"));
 }

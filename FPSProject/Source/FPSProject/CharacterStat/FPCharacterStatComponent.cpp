@@ -10,7 +10,7 @@
 // Sets default values for this component's properties
 UFPCharacterStatComponent::UFPCharacterStatComponent()
 {
-	
+    SetIsReplicatedByDefault(true);
 }
 
 void UFPCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -33,6 +33,7 @@ void UFPCharacterStatComponent::OnRep_CurrentHealth()
 	//LOG_NET(NetworkLog, Log, TEXT("CurrentHealth Updated: %f"), CurrentHealth);
 
 	//ToDo: UI 업데이트 필요 시 여기서 처리
+	OnHealthChanged.Broadcast(CurrentHealth); // 체력 변경 이벤트 브로드캐스트
 }
 
 // 서버에서만 실행되는 스탯 변경 함수
@@ -53,6 +54,11 @@ bool UFPCharacterStatComponent::ServerModifyStat_Validate(float HealthDelta, flo
 	return FMath::Abs(HealthDelta) < 1000.0f && FMath::Abs(AttackDelta) < 1000.0f;
 }
 
+
+void UFPCharacterStatComponent::Client_UpdateHUD_Implementation()
+{
+	
+}
 
 float UFPCharacterStatComponent::ApplyDamage(float DamageAmount)
 {

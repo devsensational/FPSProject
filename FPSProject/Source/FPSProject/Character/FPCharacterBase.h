@@ -98,7 +98,7 @@ public:
 
 protected:
 	UPROPERTY()
-	TMap<EFPWeaponType,TObjectPtr<class AFPWeaponBase>> OwnedWeaponMap; // 현재 소유하고 있는 모든 무기 맵
+	TMap<EFPWeaponType,TObjectPtr<AFPWeaponBase>> OwnedWeaponMap; // 현재 소유하고 있는 모든 무기 맵
 
 	UPROPERTY()
 	TObjectPtr<AFPWeaponBase> CurrentWeapon; // 현재 손에 들고 있는 무기
