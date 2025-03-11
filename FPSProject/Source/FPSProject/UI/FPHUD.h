@@ -27,9 +27,17 @@ public:
 	UUserWidget* HUDWidget;
 
 	// UI 업데이트 함수
+	UFUNCTION()
 	void UpdateHealth(float NewHealth);
 
+	/* 캐릭터 컨트롤러 섹션 */
+	UPROPERTY()
+	TObjectPtr<class AFPPlayerController> PlayerController;
+	
 	/* 캐릭터 스탯 컴포넌트 섹션 */
+	UPROPERTY()
+	TObjectPtr<class AFPCharacterBase> PlayerCharacter;
+	
 	UPROPERTY()
 	TObjectPtr<class UFPCharacterStatComponent> CharacterStatComponent;
 

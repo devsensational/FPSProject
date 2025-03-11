@@ -39,10 +39,14 @@ public:
 	virtual void ServerInitializeActor();
 
 	/* 캐릭터 Stat Component 섹션 */
-public:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stats")
 	UFPCharacterStatComponent* CharacterStatComponent;
 
+public:
+	FORCEINLINE UFPCharacterStatComponent* GetCharacterStatComponent() const { return CharacterStatComponent; }
+	
+public:
 	UFUNCTION()
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override; 
 	

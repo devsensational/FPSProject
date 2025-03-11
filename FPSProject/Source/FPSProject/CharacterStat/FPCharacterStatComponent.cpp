@@ -30,7 +30,7 @@ void UFPCharacterStatComponent::BeginPlay()
 // 체력이 변경될 때 실행 (클라이언트에서 업데이트)
 void UFPCharacterStatComponent::OnRep_CurrentHealth()
 {
-	//LOG_NET(NetworkLog, Log, TEXT("CurrentHealth Updated: %f"), CurrentHealth);
+	UE_LOG(LogTemp, Log, TEXT("CurrentHealth changed"));
 
 	//ToDo: UI 업데이트 필요 시 여기서 처리
 	OnHealthChanged.Broadcast(CurrentHealth); // 체력 변경 이벤트 브로드캐스트

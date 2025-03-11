@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FPTextWidgetBase.h"
 #include "Blueprint/UserWidget.h"
 #include "FPHpWidget.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class FPSPROJECT_API UFPHpWidget : public UUserWidget
+class FPSPROJECT_API UFPHpWidget : public UFPTextWidgetBase
 {
 	GENERATED_BODY()
 	
