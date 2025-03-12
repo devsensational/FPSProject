@@ -43,8 +43,6 @@ void UFPCharacterStatComponent::ServerModifyStat_Implementation(float HealthDelt
 	{
 		CurrentHealth += HealthDelta;
 
-		// 값이 변경되면 서버의 클라이언트에게도 명시
-		OnRep_CurrentHealth();
 	}
 }
 
@@ -62,10 +60,8 @@ void UFPCharacterStatComponent::Client_UpdateHUD_Implementation()
 
 float UFPCharacterStatComponent::ApplyDamage(float DamageAmount)
 {
-	if (GetOwner() && !GetOwner()->HasAuthority()) return 0.0f; // 서버에서만 실행, 여기서 GetOwner()는 컴포넌트 소유 액터를 뜻함
-
+	UE_LOG(LogTemp, Log, TEXT("Character %s took %f damage, Remaining Health: %f"), *GetName(), DamageAmount, CurrentHealth - DamageAmount);
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
-	UE_LOG(LogTemp, Log, TEXT("Character %s took %f damage, Remaining Health: %f"), *GetName(), DamageAmount, CurrentHealth);
 
 	if (CurrentHealth <= 0)
 	{

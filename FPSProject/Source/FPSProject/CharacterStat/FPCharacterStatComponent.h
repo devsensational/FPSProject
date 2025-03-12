@@ -36,7 +36,7 @@ public:
 	
 	// 현재 체력 (네트워크 동기화)
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_CurrentHealth, VisibleInstanceOnly, BlueprintReadOnly, Category = "Stat")
-	float CurrentHealth;
+	float CurrentHealth = 100.0f;
 
 	// 체력 변경 시 클라이언트 반영
 	UFUNCTION()

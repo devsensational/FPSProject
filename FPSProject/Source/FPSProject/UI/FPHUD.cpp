@@ -3,11 +3,8 @@
 
 #include "UI/FPHUD.h"
 
-#include "FPSProject.h"
+#include "FPHUDWidgetBase.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/FPCharacterBase.h"
-#include "CharacterStat/FPCharacterStatComponent.h"
-#include "Player/FPPlayerController.h"
 
 void AFPHUD::BeginPlay()
 {
@@ -15,22 +12,10 @@ void AFPHUD::BeginPlay()
 
 	if (HUDWidgetClass)
 	{
-		HUDWidget = CreateWidget<UUserWidget>(GetWorld(), HUDWidgetClass);
+		HUDWidget = Cast<UFPHUDWidgetBase>(CreateWidget<UUserWidget>(GetWorld(), HUDWidgetClass));
 		if (HUDWidget)
 		{
 			HUDWidget->AddToViewport();
 		}
 	}
-
-	PlayerCharacter = Cast<AFPCharacterBase>(GetOwningPawn());
-	if (PlayerCharacter)
-	{
-		CharacterStatComponent = PlayerCharacter->GetCharacterStatComponent();
-		CharacterStatComponent->OnHealthChanged.AddDynamic(this, &AFPHUD::UpdateHealth);
-	}
-}
-
-void AFPHUD::UpdateHealth(float NewHealth)
-{
-	LOG_NET(NetworkLog, Log, TEXT("Health point evnet"));
 }

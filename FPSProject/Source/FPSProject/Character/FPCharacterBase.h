@@ -100,6 +100,7 @@ public:
 	void LootWeapon(AFPWeaponBase* InWeapon);
 	void DropWeapon(EFPWeaponType InWeaponType);
 
+	FORCEINLINE AFPWeaponBase* GetCurrentWeapon() const { return CurrentWeapon; }
 protected:
 	UPROPERTY()
 	TMap<EFPWeaponType,TObjectPtr<AFPWeaponBase>> OwnedWeaponMap; // 현재 소유하고 있는 모든 무기 맵

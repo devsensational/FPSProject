@@ -97,6 +97,8 @@ void AFPWeaponBase::Attack()
 void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
 {
 	LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
+	
+	OnAmmoChanged.Broadcast(CurrentAmmo, CurrentRemainingAmmo);
 }
 
 void AFPWeaponBase::PlayAnimationAttack()

@@ -14,9 +14,18 @@ class FPSPROJECT_API UFPTextWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
 
+	/* PlayerController 레퍼런스 바인딩 섹션 */
+protected:
+	UPROPERTY()
+	APlayerController* PlayerController;
+	
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+
+	/* Text 변경 섹션 */
 public:
 	UFUNCTION(BlueprintCallable, Category = "Text UI")
-	void SetTextValue(const FString& NewText);
+	virtual void SetTextValue(const FString& NewText);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

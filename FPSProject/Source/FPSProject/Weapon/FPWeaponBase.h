@@ -33,6 +33,8 @@ enum class EFPWeaponFireType : uint8
 	WFT_Burst UMETA(DisplayName = "Burst"),
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, NewCurrentAmmo, int32, NewCurrentReamingAmmo);
+
 UCLASS(Blueprintable)
 class FPSPROJECT_API AFPWeaponBase : public AActor
 {
@@ -92,6 +94,10 @@ public:
 	EFPWeaponType GetType() const { return Type; }
 	float GetBeforeFireTime() const { return BeforeFireTime; }
 	
+	// 탄약 변경 이벤트
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAmmoChanged OnAmmoChanged;
+	
 protected:
 	EFPWeaponType Type			= EFPWeaponType::WT_None;
 	float Damage				= 30.0f;
@@ -111,7 +117,6 @@ protected:
 	float FireDelay = 0;		// 총기 발사 간격 내부 쿨타임(클라이언트)
 	float BeforeFireTime = 0;	// 총기 발사 시 서버에서 현재 시간과 이전 시간을 비교하기 위한 변수
 	float CurrentFireTime = 0;
-
 	
 	// 무기 Mesh 관련 변수
 public:
