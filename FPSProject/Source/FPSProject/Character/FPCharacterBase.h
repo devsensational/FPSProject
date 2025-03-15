@@ -13,11 +13,12 @@ class AFPGameMode;
 class AFPWeaponBase;
 enum class EFPWeaponType : uint8;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, NewCurrentAmmo, int32, NewCurrentReamingAmmo);
+
 UCLASS(Blueprintable)
 class FPSPROJECT_API AFPCharacterBase : public ACharacter
 {
 	GENERATED_BODY()
-
 public:
 	AFPCharacterBase();
 
@@ -137,7 +138,14 @@ protected:
 
 	// 캐릭터 사망 시 실제 구현부 (서버-클라이언트 모두 실행됨)
 	void PerformDeath();
+	
+	// 탄약 변경 이벤트
+	// 무기가 자주 변경되므로 캐릭터에 델리게이트를 구현, 실제 브로드캐스트는 Weapon에서 일어남
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAmmoChanged OnAmmoChanged;
 
+	FORCEINLINE void BroadcastAmmoChanged(int32 CurrentAmmo, int32 CurrentReamingAmmo) const { OnAmmoChanged.Broadcast(CurrentAmmo, CurrentReamingAmmo); }
 	
 public:
 	//3인칭 Mesh

@@ -35,19 +35,19 @@ public:
 // Input Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputMappingContext> InputContext;
+	TObjectPtr<UInputMappingContext> InputContext;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> LookAction;
+	TObjectPtr<UInputAction> LookAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> AttackAction;
+	TObjectPtr<UInputAction> AttackAction;
 
 protected:
 	virtual void BeginPlay() override;

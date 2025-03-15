@@ -33,8 +33,6 @@ enum class EFPWeaponFireType : uint8
 	WFT_Burst UMETA(DisplayName = "Burst"),
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, NewCurrentAmmo, int32, NewCurrentReamingAmmo);
-
 UCLASS(Blueprintable)
 class FPSPROJECT_API AFPWeaponBase : public AActor
 {
@@ -94,9 +92,6 @@ public:
 	EFPWeaponType GetType() const { return Type; }
 	float GetBeforeFireTime() const { return BeforeFireTime; }
 	
-	// 탄약 변경 이벤트
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnAmmoChanged OnAmmoChanged;
 	
 protected:
 	EFPWeaponType Type			= EFPWeaponType::WT_None;
