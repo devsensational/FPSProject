@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Weapon/FPWeaponBase.h"
 
 //생성자
 AFPCharacterPlayer::AFPCharacterPlayer()
@@ -114,6 +115,18 @@ void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*		PlayerInput
 		
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::Attack);
+
+		//Reload
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::Reload);
+
+		//주무기 장착
+		EnhancedInputComponent->BindAction(EquipPrimaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipPrimaryWeapon);
+
+		//보조무기 장착
+		EnhancedInputComponent->BindAction(EquipSecondaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipSecondaryWeapon);
+
+		//근접무기 장착
+		EnhancedInputComponent->BindAction(EquipMeleeAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipMeleeWeapon);
 	}
 	
 	if (bIsLocalPlayer)

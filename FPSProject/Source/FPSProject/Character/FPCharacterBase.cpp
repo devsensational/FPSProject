@@ -178,8 +178,7 @@ void AFPCharacterBase::SetCollisionProfile()
 // 장착한 무기 사용
 void AFPCharacterBase::Attack()
 {
-	LOG_NET(NetworkLog, Log, TEXT("Try Attack"));
-	// ToDo: 서버에서 공격 실행나눠야 함
+	//LOG_NET(NetworkLog, Log, TEXT("Try Attack"));
 	if (HasAuthority()) // 서버라면 직접 공격 실행
 	{
 		PerformAttack();
@@ -193,10 +192,15 @@ void AFPCharacterBase::Attack()
 // 장착한 무기 재장전
 void AFPCharacterBase::Reload()
 {
-	if (CurrentWeapon)
+	LOG_NET(NetworkLog, Log, TEXT("Try Reload"));
+	// ToDo: 서버에서 공격 실행나눠야 함
+	if (HasAuthority()) // 서버라면 직접 재장전
 	{
-		CurrentWeapon->Reload();
-		// Todo: 무기 재장전 실행
+		PerformReload();
+	}
+	else // 클라이언라면 서버에 재장전 요청
+	{
+		ServerReload();	
 	}
 }
 
@@ -210,7 +214,7 @@ bool AFPCharacterBase::ServerAttack_Validate()
 	return true;
 }
 
-void AFPCharacterBase::PerformAttack()
+void AFPCharacterBase::PerformAttack() const
 {
 	if (CurrentWeapon)
 	{
@@ -218,6 +222,19 @@ void AFPCharacterBase::PerformAttack()
 	}
 }
 
+void AFPCharacterBase::ServerReload_Implementation()
+{
+	PerformReload();
+}
+
+
+void AFPCharacterBase::PerformReload() const
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
+	}
+}
 
 // 장비 상호작용 및 전투 관련 섹션
 // 무기 장비 해제, 장착한 무기에 대한 레퍼런스 해제
@@ -246,7 +263,7 @@ void AFPCharacterBase::UnequipWeapon()
 }
 
 // 무기 습득, 습득한 무기에 대한 레퍼런스 설정
-void AFPCharacterBase::LootWeapon(AFPWeaponBase* InWeapon)
+void AFPCharacterBase::LootWeapon(const AFPWeaponBase* InWeapon)
 {
 	int32 WeaponID = InWeapon->GetUniqueID();
 	LOG_NET(NetworkLog, Log, TEXT("Loot Weapon Id: %d"), WeaponID)
@@ -261,7 +278,7 @@ void AFPCharacterBase::LootWeapon(AFPWeaponBase* InWeapon)
 }
 
 // 무기 드랍, 무기를 인벤토리로 부터 레퍼런스를 해제하고 땅에 버림
-void AFPCharacterBase::DropWeapon(EFPWeaponType InWeaponType)
+void AFPCharacterBase::DropWeapon(const EFPWeaponType InWeaponType)
 {
 	if (HasAuthority()) // 서버라면 직접 공격 실행
 	{
@@ -275,12 +292,12 @@ void AFPCharacterBase::DropWeapon(EFPWeaponType InWeaponType)
 
 // 서버에서 장비 장착
 // 무기 장비, 장착한 무기에 대한 레퍼런스 설정
-void AFPCharacterBase::ServerEquip_Implementation(EFPWeaponType InWeaponType)
+void AFPCharacterBase::ServerEquip_Implementation(const EFPWeaponType InWeaponType)
 {
 	PerformEquip(InWeaponType);
 }
 
-bool AFPCharacterBase::ServerEquip_Validate(EFPWeaponType InWeaponType)
+bool AFPCharacterBase::ServerEquip_Validate(const EFPWeaponType InWeaponType)
 {
 	return true;
 }

@@ -91,15 +91,18 @@ public:
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAttack();
+	void PerformAttack() const;
 
-	void PerformAttack();
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+	void PerformReload() const;
 	
 	/* 캐릭터 무기 소유 관련 섹션 */
 public:
 	void EquipWeapon(EFPWeaponType InWeaponType);
 	void UnequipWeapon();
-	void LootWeapon(AFPWeaponBase* InWeapon);
-	void DropWeapon(EFPWeaponType InWeaponType);
+	void LootWeapon(const AFPWeaponBase* InWeapon);
+	void DropWeapon(const EFPWeaponType InWeaponType);
 
 	FORCEINLINE AFPWeaponBase* GetCurrentWeapon() const { return CurrentWeapon; }
 protected:

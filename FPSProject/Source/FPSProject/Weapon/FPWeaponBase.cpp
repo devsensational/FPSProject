@@ -142,6 +142,22 @@ void AFPWeaponBase::UnEquip()
 
 void AFPWeaponBase::Reload()
 {
-	// Todo: 무기 재장전 실행, 서버 RPC 추가해야됌
+	if (CurrentRemainingAmmo <= 0) return;
+	
+	GetWorldTimerManager().SetTimer(
+	TimerHandle,
+	this,
+	&AFPWeaponBase::ExecuteReload,
+	ReloadTime,       // 지연시간 (초 단위)
+	false       // 반복 여부 (true면 반복 실행)
+	);
+}
+
+void AFPWeaponBase::ExecuteReload()
+{
+	// 타이머 종료 후 무기 재장전 실행
+	int32 ReloadAmmoCount = MaxAmmo - CurrentAmmo;
+	CurrentAmmo = FMath::Clamp(CurrentAmmo + CurrentRemainingAmmo, 0, MaxAmmo);
+	CurrentRemainingAmmo = FMath::Clamp( CurrentRemainingAmmo - ReloadAmmoCount, 0, MaxRemainingAmmo);
 	
 }

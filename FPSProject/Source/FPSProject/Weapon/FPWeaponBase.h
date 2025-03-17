@@ -1,5 +1,6 @@
 // Weapon에 대한 전반적인 내용을 구현하는 클래스
 // Server를 통해 무기가 상호작용되거나, 소유자에 대한 레퍼런스를 설정하는 내용 구현
+// 대부분의 행동은 Server를 통해 상호작용되야 함
 
 #pragma once
 
@@ -46,7 +47,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
+	UPROPERTY()
 	TObjectPtr<AFPGameMode> GameMode;
 	
 	/* 무기 Collision 섹션 */
@@ -76,6 +78,11 @@ public:
 	virtual void Equip(TObjectPtr<AFPCharacterBase> NewOwner);	// 무기를 장비, 무기 소유자에 대한 레퍼런스 설정
 	virtual void UnEquip();					// 무기 장비 해제, 무기 소유자의 레퍼런스 해제
 	virtual void Reload();
+
+protected:
+	FTimerHandle TimerHandle;
+	
+	virtual void ExecuteReload();
 	
 protected:
 	UFUNCTION(NetMulticast, Reliable)
@@ -94,13 +101,14 @@ public:
 	
 	
 protected:
-	EFPWeaponType Type			= EFPWeaponType::WT_None;
+	EFPWeaponType Type			= EFPWeaponType::WT_Primary;
 	float Damage				= 30.0f;
 	float Accuracy				= 30.0f;
 	float Magazine				= 30.0f;
+	float ReloadTime			= 3.0f;
 	float RPM					= 300.0f;
 	int32 Price					= 2700;
-	int32 MaxAmmo				= 500;
+	int32 MaxAmmo				= 30;
 	int32 MaxRemainingAmmo		= 120;
 
 	UPROPERTY(ReplicatedUsing=OnRep_ReplicateCurrentAmmo)
