@@ -14,13 +14,6 @@ AFPWeaponBase::AFPWeaponBase()
 	PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
 
-	// 1인칭용 메시
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
-	FirstPersonMesh->SetupAttachment(RootComponent);
-	FirstPersonMesh->SetOnlyOwnerSee(true); // 소유자만 볼 수 있도록 설정
-	FirstPersonMesh->bCastDynamicShadow = false;
-	FirstPersonMesh->CastShadow = false;
-
 	// 3인칭용 메시
 	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonMesh"));
 	ThirdPersonMesh->SetupAttachment(RootComponent);
@@ -57,6 +50,7 @@ void AFPWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AFPWeaponBase, CurrentAmmo)
+	DOREPLIFETIME(AFPWeaponBase, CurrentRemainingAmmo)
 }
 
 
@@ -117,27 +111,60 @@ void AFPWeaponBase::MulticastAttackEffects_Implementation()
 	UE_LOG(LogTemp, Log, TEXT("Play fire effects on all clients!"));
 }
 
-void AFPWeaponBase::Equip(TObjectPtr<AFPCharacterBase> NewOwner)
+void AFPWeaponBase::BindReference(TObjectPtr<AFPCharacterBase> NewOwner)
 {
 	if (bIsOwned) return;
 	
-	// Todo: 장비자에 대한 레퍼런스를 설정
+	// 장비자에 대한 레퍼런스를 설정
 	SetOwner(NewOwner);
+	WeaponOwner = NewOwner;
 	bIsOwned = true;
-	SetSphereCollisionEnabled(true);
+	SetSphereCollisionEnabled(false);
+
+	MulticastBindWeapon();
 	
 	LOG_NET(NetworkLog, Log, TEXT("Set Owner: %d"), NewOwner->GetUniqueID());
 }
 
-void AFPWeaponBase::UnEquip()
+void AFPWeaponBase::UnbindReference()
 {
 	// Todo: 장비자에 대한 레퍼런스 해제
 
 	SetOwner(nullptr);
 	bIsOwned = false;
-	SetSphereCollisionEnabled(false);
+	SetSphereCollisionEnabled(true);
+	
+	ThirdPersonMesh->SetOwnerNoSee(false);
+	MulticastUnbindWeapon();
 	
 	LOG_NET(NetworkLog, Log, TEXT("%s"), TEXT("Owner Removed"));
+}
+
+void AFPWeaponBase::MulticastBindWeapon_Implementation()
+{
+	// Weapon Owner는 3인칭을 표시하지 않음
+	if (WeaponOwner && WeaponOwner->IsLocallyControlled())
+	{
+		ThirdPersonMesh->SetVisibility(false);
+	}
+	else
+	{
+		ThirdPersonMesh->SetVisibility(true);
+	}
+}
+
+void AFPWeaponBase::MulticastUnbindWeapon_Implementation()
+{
+	// 장비는 소유하되 장비를 해제할 시 모든 사람에게 3인칭 표시 안함
+	ThirdPersonMesh->SetVisibility(false);
+	
+}
+
+void AFPWeaponBase::MulticastDropWeapon_Implementation()
+{
+	// 장비 드랍 시 모든 사람에게 3인칭을 표시
+	ThirdPersonMesh->SetVisibility(true);
+	
 }
 
 void AFPWeaponBase::Reload()

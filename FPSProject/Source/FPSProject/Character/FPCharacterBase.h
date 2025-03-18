@@ -104,6 +104,8 @@ public:
 	void LootWeapon(const AFPWeaponBase* InWeapon);
 	void DropWeapon(const EFPWeaponType InWeaponType);
 
+	void DropCurrentWeapon();
+
 	FORCEINLINE AFPWeaponBase* GetCurrentWeapon() const { return CurrentWeapon; }
 protected:
 	UPROPERTY()
@@ -118,7 +120,7 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerEquip(EFPWeaponType InWeaponType);
 	
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void ServerUnequip();
 	
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -126,14 +128,14 @@ protected:
 	
 	UFUNCTION(Server, Unreliable)
 	void ServerDropWeapon(EFPWeaponType InWeaponType); 
+
+	UFUNCTION(Server, Unreliable)
+	void ServerDropCurrentWeapon(); 
 	
 	void PerformEquip(EFPWeaponType InWeaponType);
 	void PerformUnequip();
 	void PerformLootWeapon(int32 InWeaponID);
 	void PerformDropWeapon(EFPWeaponType InWeaponType);
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastEquipWeapon(); // 모든 클라이언트에게 무기 장비 적용
 	
 	// 캐릭터 사망 시 멀티캐스트
 	UFUNCTION(NetMulticast, Unreliable)

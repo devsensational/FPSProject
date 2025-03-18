@@ -72,11 +72,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> EquipThrowableAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> DropCurrentWeaponAction;
 
 	/* Wrapper */
-	FORCEINLINE void EquipPrimaryWeapon()	{ EquipWeapon(EFPWeaponType::WT_Primary); }
-	FORCEINLINE void EquipSecondaryWeapon() { EquipWeapon(EFPWeaponType::WT_Secondary); }
-	FORCEINLINE void EquipMeleeWeapon()		{ EquipWeapon(EFPWeaponType::WT_Melee); }
+	FORCEINLINE void EquipPrimaryWeaponWrapper()	{ EquipWeapon(EFPWeaponType::WT_Primary); }
+	FORCEINLINE void EquipSecondaryWeaponWrapper()	{ EquipWeapon(EFPWeaponType::WT_Secondary); }
+	FORCEINLINE void EquipMeleeWeaponWrapper()		{ EquipWeapon(EFPWeaponType::WT_Melee); }
 	
 	// 입력 처리 함수
 	void Move(const FInputActionValue& Value);

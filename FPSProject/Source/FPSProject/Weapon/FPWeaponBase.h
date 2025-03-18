@@ -63,8 +63,8 @@ private:
 	
 	/* 무기 오너 관련 섹션 */
 protected:
-	//UPROPERTY()
-	//TObjectPtr<AFPCharacterBase> WeaponOwner = nullptr; // 무기 소유자 레퍼런스
+	UPROPERTY()
+	TObjectPtr<AFPCharacterBase> WeaponOwner = nullptr; // 무기 소유자 레퍼런스
 
 public:
 	UPROPERTY()
@@ -75,8 +75,8 @@ public:
 	// ToDO: 무기를 사용하는 것은 모두 서버로 부터 호출되며 완료된 것을 브로드캐스트를 통해 서버로 전달해야 함 
 public:
 	virtual void Attack();					// 무기를 사용해서 공격
-	virtual void Equip(TObjectPtr<AFPCharacterBase> NewOwner);	// 무기를 장비, 무기 소유자에 대한 레퍼런스 설정
-	virtual void UnEquip();					// 무기 장비 해제, 무기 소유자의 레퍼런스 해제
+	virtual void BindReference(TObjectPtr<AFPCharacterBase> NewOwner);	// 무기를 장비, 무기 소유자에 대한 레퍼런스 설정
+	virtual void UnbindReference();					// 무기 장비 해제, 무기 소유자의 레퍼런스 해제
 	virtual void Reload();
 
 protected:
@@ -85,6 +85,15 @@ protected:
 	virtual void ExecuteReload();
 	
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastBindWeapon(); // 모든 클라이언트에게 무기 장비 적용
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastDropWeapon(); // 모든 클라이언트에게 무기 장비 적용
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastUnbindWeapon(); // 모든 클라이언트에게 무기 장비 적용
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastAttackEffects(); // 모든 클라이언트에게 공격 이펙트 적용
 	
@@ -106,13 +115,15 @@ protected:
 	float Accuracy				= 30.0f;
 	float Magazine				= 30.0f;
 	float ReloadTime			= 3.0f;
-	float RPM					= 300.0f;
+	float RPM					= 600.0f;
 	int32 Price					= 2700;
 	int32 MaxAmmo				= 30;
 	int32 MaxRemainingAmmo		= 120;
 
 	UPROPERTY(ReplicatedUsing=OnRep_ReplicateCurrentAmmo)
 	int32 CurrentAmmo			= MaxAmmo;
+
+	UPROPERTY(Replicated)
 	int32 CurrentRemainingAmmo	= MaxRemainingAmmo;
 
 	// 클라이언트에서 서버로 보내는 명령의 수를 제한함과 동시에,
@@ -123,9 +134,6 @@ protected:
 	
 	// 무기 Mesh 관련 변수
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	USkeletalMeshComponent* FirstPersonMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* ThirdPersonMesh;
 

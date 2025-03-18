@@ -252,7 +252,7 @@ void AFPCharacterBase::EquipWeapon(EFPWeaponType InWeaponType)
 
 void AFPCharacterBase::UnequipWeapon()
 {
-	if (HasAuthority()) // 서버라면 직접 공격 실행
+	if (HasAuthority()) // 서버라면 직접 장비 해제
 	{
 		PerformUnequip();
 	}
@@ -280,6 +280,7 @@ void AFPCharacterBase::LootWeapon(const AFPWeaponBase* InWeapon)
 // 무기 드랍, 무기를 인벤토리로 부터 레퍼런스를 해제하고 땅에 버림
 void AFPCharacterBase::DropWeapon(const EFPWeaponType InWeaponType)
 {
+	LOG_NET(NetworkLog, Log, TEXT("Try drop Weapon Id: %d"), InWeaponType)
 	if (HasAuthority()) // 서버라면 직접 공격 실행
 	{
 		PerformDropWeapon(InWeaponType);
@@ -287,6 +288,32 @@ void AFPCharacterBase::DropWeapon(const EFPWeaponType InWeaponType)
 	else // 클라이언트라면 서버에게 요청
 	{
 		ServerDropWeapon(InWeaponType);
+	}
+}
+
+// 현재 손에 들고있는 무기 드랍
+void AFPCharacterBase::DropCurrentWeapon()
+{
+	LOG_NET(NetworkLog, Log, TEXT("Try drop current Weapon"))
+	if (HasAuthority()) // 서버라면 직접 공격 실행
+	{
+		if (CurrentWeapon)
+		{
+			PerformDropWeapon(CurrentWeapon->GetType());
+		}
+	}
+	else // 클라이언트라면 서버에게 요청
+	{
+		ServerDropCurrentWeapon();
+	}
+	
+}
+
+void AFPCharacterBase::ServerDropCurrentWeapon_Implementation()
+{
+	if (CurrentWeapon)
+	{
+		PerformDropWeapon(CurrentWeapon->GetType());
 	}
 }
 
@@ -306,11 +333,6 @@ bool AFPCharacterBase::ServerEquip_Validate(const EFPWeaponType InWeaponType)
 void AFPCharacterBase::ServerUnequip_Implementation()
 {
 	PerformUnequip();
-}
-
-bool AFPCharacterBase::ServerUnequip_Validate()
-{
-	return true;
 }
 
 // 서버에서 장비 습득
@@ -357,23 +379,18 @@ void AFPCharacterBase::PerformEquip(EFPWeaponType InWeaponType)
 		CurrentWeapon = NextWeapon;
 	}
 
+	CurrentWeapon->BindReference(this);
+
+	
+	FName WeaponSocket(TEXT("hand_socket"));
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
 	LOG_NET(NetworkLog, Log, TEXT("Equip Weapon: %d"), (int32)InWeaponType);
-	//무기를 캐릭터 손에 들게 설정
-	MulticastEquipWeapon();
 }
 
-// 무기를 손에서 해제하기
+// 무기를 손에서 해제하기(장비는 소유한 상태)
 void AFPCharacterBase::PerformUnequip()
 {
-	// 현재 장비하고 있는 무기를 해제하고, 이전 무기로 장착
-	if (PreviousWeapon != nullptr)
-	{
-		CurrentWeapon = PreviousWeapon;
-	}
-	else
-	{
-		CurrentWeapon = nullptr;
-	}
+	
 }
 
 // 무기를 바닥에서 줍기
@@ -386,7 +403,7 @@ void AFPCharacterBase::PerformLootWeapon(int32 LootedWeapon)
 	if (NextWeapon)
 	{
 		OwnedWeaponMap.Add(NextWeapon->GetType(), NextWeapon);
-		NextWeapon->Equip(this);
+		NextWeapon->BindReference(this);
 		LOG_NET(NetworkLog, Log, TEXT("Weapon(%d) is registered Character(%d)"), LootedWeapon, GetUniqueID());
 	}
 
@@ -398,16 +415,16 @@ void AFPCharacterBase::PerformLootWeapon(int32 LootedWeapon)
 void AFPCharacterBase::PerformDropWeapon(EFPWeaponType InWeaponType)
 {
 	//무기를 땅에 버리고, 레퍼런스를 해제. 손에 들고 있는 무기를 버릴 경우 이전 무기를 손에 장착하고 땅에 버리기
-	if (CurrentWeapon->GetType() == InWeaponType)
+	CurrentWeapon->UnbindReference();
+	
+	if (CurrentWeapon->GetType() != InWeaponType)
 	{
 		if (PreviousWeapon != nullptr) PerformEquip(PreviousWeapon->GetType());
 	}
+	else
+	{
+		CurrentWeapon = nullptr;
+	}
 	OwnedWeaponMap.Remove(InWeaponType);
-	 
-}
-
-// 모든 클라이언트에게 무기 장착 적용
-void AFPCharacterBase::MulticastEquipWeapon_Implementation()
-{
-	// Todo: 장착한 무기 메시 설정 
+	LOG_NET(NetworkLog, Log, TEXT("Weapon dropped(unbind): %d"), InWeaponType);
 }

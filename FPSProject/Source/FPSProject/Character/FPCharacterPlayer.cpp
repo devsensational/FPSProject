@@ -62,7 +62,7 @@ void AFPCharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(AFPCharacterPlayer, bIsLocalPlayer);
 }
 
-//입력 관련 메소드
+/* 입력 관련 섹션 */
 //캐릭터 이동
 void AFPCharacterPlayer::Move(const FInputActionValue& Value)
 {
@@ -97,8 +97,8 @@ void AFPCharacterPlayer::Jump()
 	Super::Jump();
 }
 
-
-void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*		PlayerInputComponent)
+// Input binding
+void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*	PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
@@ -120,13 +120,16 @@ void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*		PlayerInput
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::Reload);
 
 		//주무기 장착
-		EnhancedInputComponent->BindAction(EquipPrimaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipPrimaryWeapon);
+		EnhancedInputComponent->BindAction(EquipPrimaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipPrimaryWeaponWrapper);
 
 		//보조무기 장착
-		EnhancedInputComponent->BindAction(EquipSecondaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipSecondaryWeapon);
+		EnhancedInputComponent->BindAction(EquipSecondaryAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipSecondaryWeaponWrapper);
 
 		//근접무기 장착
-		EnhancedInputComponent->BindAction(EquipMeleeAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipMeleeWeapon);
+		EnhancedInputComponent->BindAction(EquipMeleeAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::EquipMeleeWeaponWrapper);
+		
+		//현재 손에 든 무기 버리기
+		EnhancedInputComponent->BindAction(DropCurrentWeaponAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::DropCurrentWeapon);
 	}
 	
 	if (bIsLocalPlayer)
