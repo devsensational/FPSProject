@@ -5,7 +5,9 @@
 
 #include "FPSProject.h"
 #include "Character/FPCharacterBase.h"
+#include "Game/FPGameInstance.h"
 #include "Game/FPGameMode.h"
+#include "GameData/FPWeaponStats.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -63,6 +65,32 @@ void AFPWeaponBase::BeginPlay()
 	{
 		GetWorld()->GetAuthGameMode<AFPGameMode>()->RegisterWeaponID(this);
 	}
+	
+	// GameInstance 가져오기
+	if (UFPGameInstance* GameInstance = Cast<UFPGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		FPWeaponStats WeaponStats;
+		if (GameInstance->GetWeaponStatsByName(Name, WeaponStats))
+		{
+			// 데이터 적용
+			Type					= WeaponStats.Type;
+			Damage					= WeaponStats.Damage;
+			Accuracy				= WeaponStats.Accuracy;
+			RPM						= WeaponStats.RPM;
+			Price					= WeaponStats.Price;
+			ReloadTime				= WeaponStats.ReloadTime;
+			MaxAmmo					= WeaponStats.MaxAmmo;
+			MaxRemainingAmmo		= WeaponStats.MaxRemainingAmmo;
+			CurrentAmmo				= MaxAmmo;
+			CurrentRemainingAmmo	= MaxRemainingAmmo;
+
+			UE_LOG(LogTemp, Log, TEXT("Weapon stats loaded: %s (Damage: %f, Accuracy: %f)"), *Name.ToString(), Damage, Accuracy);
+		}
+	}
+	else
+	{
+			UE_LOG(LogTemp, Warning, TEXT("Weapon stats not loaded: %s"), *Name.ToString());
+	}
 }
 
 void AFPWeaponBase::SetCollisionProfile() const
@@ -98,6 +126,7 @@ void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
 void AFPWeaponBase::PlayAnimationAttack()
 {
 	// WeaponBase에는 애니메이션이 없음
+	// Todo: 1인칭용 애니메이션 컴포넌트를 구현하여 이벤트를 전달하는 식으로 구현
 }
 
 void AFPWeaponBase::PlayAnimationReload()
@@ -118,8 +147,7 @@ void AFPWeaponBase::BindReference(TObjectPtr<AFPCharacterBase> NewOwner)
 	// 장비자에 대한 레퍼런스를 설정
 	SetOwner(NewOwner);
 	WeaponOwner = NewOwner;
-	bIsOwned = true;
-	SetSphereCollisionEnabled(false);
+	SetLootable(true);
 
 	MulticastBindWeapon();
 	
@@ -128,16 +156,27 @@ void AFPWeaponBase::BindReference(TObjectPtr<AFPCharacterBase> NewOwner)
 
 void AFPWeaponBase::UnbindReference()
 {
-	// Todo: 장비자에 대한 레퍼런스 해제
-
-	SetOwner(nullptr);
-	bIsOwned = false;
-	SetSphereCollisionEnabled(true);
+	SetActorLocation(Owner->GetActorLocation());
 	
-	ThirdPersonMesh->SetOwnerNoSee(false);
-	MulticastUnbindWeapon();
+	SetOwner(nullptr); //장비자에 대한 레퍼런스 해제
+	WeaponOwner = nullptr;
+
+	GetWorldTimerManager().SetTimer(
+	TimerHandle,
+	[this]() { SetLootable(false); },
+	LootableCooldown,       // 지연시간 (초 단위)
+	false       // 반복 여부 (true면 반복 실행)
+	);
+	
+	MulticastDropWeapon();
 	
 	LOG_NET(NetworkLog, Log, TEXT("%s"), TEXT("Owner Removed"));
+}
+
+void AFPWeaponBase::SetLootable(bool bValue)
+{
+	bIsOwned = bValue;
+	SetSphereCollisionEnabled(!bValue);
 }
 
 void AFPWeaponBase::MulticastBindWeapon_Implementation()

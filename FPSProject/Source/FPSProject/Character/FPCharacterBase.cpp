@@ -383,7 +383,8 @@ void AFPCharacterBase::PerformEquip(EFPWeaponType InWeaponType)
 
 	
 	FName WeaponSocket(TEXT("hand_socket"));
-	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponSocket);
+	
 	LOG_NET(NetworkLog, Log, TEXT("Equip Weapon: %d"), (int32)InWeaponType);
 }
 
@@ -415,6 +416,7 @@ void AFPCharacterBase::PerformLootWeapon(int32 LootedWeapon)
 void AFPCharacterBase::PerformDropWeapon(EFPWeaponType InWeaponType)
 {
 	//무기를 땅에 버리고, 레퍼런스를 해제. 손에 들고 있는 무기를 버릴 경우 이전 무기를 손에 장착하고 땅에 버리기
+	CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	CurrentWeapon->UnbindReference();
 	
 	if (CurrentWeapon->GetType() != InWeaponType)
