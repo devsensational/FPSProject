@@ -18,12 +18,13 @@ AFPWeaponBase::AFPWeaponBase()
 
 	// 3인칭용 메시
 	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonMesh"));
+
 	ThirdPersonMesh->SetupAttachment(RootComponent);
 	ThirdPersonMesh->SetOwnerNoSee(true); // 소유자는 보지 못하도록 설정
 
 	// 콜리전 구 생성 및 설정
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-	CollisionSphere->SetupAttachment(RootComponent);
+	CollisionSphere->SetupAttachment(ThirdPersonMesh);
 	CollisionSphere->SetSphereRadius(50.0f); // 반지름 설정
 	CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
 	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
@@ -120,7 +121,10 @@ void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
 {
 	LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
 
-	Cast<AFPCharacterBase>(Owner)->BroadcastAmmoChanged(CurrentAmmo, CurrentRemainingAmmo);
+	if (const auto FPCharacter = Cast<AFPCharacterBase>(Owner))
+	{
+		FPCharacter->BroadcastAmmoChanged(CurrentAmmo, CurrentRemainingAmmo);
+	}
 }
 
 void AFPWeaponBase::PlayAnimationAttack()

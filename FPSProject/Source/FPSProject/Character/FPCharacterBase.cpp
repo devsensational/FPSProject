@@ -380,6 +380,7 @@ void AFPCharacterBase::PerformEquip(EFPWeaponType InWeaponType)
 	}
 
 	CurrentWeapon->BindReference(this);
+	
 
 	
 	FName WeaponSocket(TEXT("hand_socket"));
