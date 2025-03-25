@@ -21,7 +21,7 @@ protected:
 	/* Weapon 레퍼런스 섹션 */
 protected:
 	UPROPERTY()
-	TObjectPtr<class AFPCharacterBase> Character;
+	TObjectPtr<class UFPGlobalEventManager> EventManager;
 	
 	UFUNCTION()
 	void AmmoToText(int32 InCurrentAmmo, int32 InCurrentRemainingAmmo);

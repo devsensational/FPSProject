@@ -13,10 +13,15 @@ UCLASS()
 class FPSPROJECT_API UFPHUDWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
+	virtual void NativeConstruct() override;
 
 protected:
 
 	// 체력 UI 위젯 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UFPTextWidgetBase> HpWidget;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UFPCrosshair> WBP_Crosshair;
+	
 };

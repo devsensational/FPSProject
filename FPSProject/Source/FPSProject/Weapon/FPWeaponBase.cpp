@@ -7,6 +7,7 @@
 #include "Character/FPCharacterBase.h"
 #include "Game/FPGameInstance.h"
 #include "Game/FPGameMode.h"
+#include "Game/FPGlobalEventManager.h"
 #include "GameData/FPWeaponStats.h"
 #include "Net/UnrealNetwork.h"
 
@@ -30,6 +31,12 @@ AFPWeaponBase::AFPWeaponBase()
 	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
 	
 	SetCollisionProfile(); // 콜리전 프로필 설정
+
+	// 이벤트매니저 레퍼런스 바인딩
+	if (IsRunningGame())
+	{
+		EventManager = GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
+	}
 	
 }
 
@@ -121,10 +128,12 @@ void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
 {
 	LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
 
-	if (const auto FPCharacter = Cast<AFPCharacterBase>(Owner))
+	if (EventManager)
 	{
-		FPCharacter->BroadcastAmmoChanged(CurrentAmmo, CurrentRemainingAmmo);
+		// 탄약 갯수 변경 시 이벤트 호출
+		EventManager->OnAmmoChanged.Broadcast(CurrentAmmo, CurrentRemainingAmmo);
 	}
+	
 }
 
 void AFPWeaponBase::PlayAnimationAttack()

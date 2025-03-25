@@ -2,33 +2,33 @@
 
 
 #include "UI/FPCurrentAmmoWidget.h"
-
-#include "Character/FPCharacterBase.h"
-#include "Weapon/FPWeaponBase.h"
+#include "Game/FPGlobalEventManager.h"
 
 void UFPCurrentAmmoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	if (!PlayerController) return;
-	
-	Character = Cast<AFPCharacterBase>(PlayerController->GetPawn());
-	if (Character)
+
+	if (IsRunningGame())
 	{
-		Character->OnAmmoChanged.AddDynamic(this, &UFPCurrentAmmoWidget::AmmoToText);
+		EventManager = GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
+	}
+	
+	if (EventManager)
+	{
+		EventManager->OnAmmoChanged.AddDynamic(this, &UFPCurrentAmmoWidget::AmmoToText);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to get character"));
+		UE_LOG(LogTemp, Warning, TEXT("Failed get Event manager"));
 	}
 }
 
 void UFPCurrentAmmoWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
-	if (Character)
+	if (EventManager)
 	{
-		Character->OnAmmoChanged.RemoveAll(this);
+		EventManager->OnAmmoChanged.RemoveAll(this);
 	}
 }
 

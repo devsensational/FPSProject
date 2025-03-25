@@ -50,6 +50,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AFPGameMode> GameMode;
+
+	UPROPERTY()
+	TObjectPtr<class UFPGlobalEventManager> EventManager;
 	
 	/* 무기 Collision 섹션 */
 public:

@@ -6,7 +6,6 @@
 #include "GameFramework/HUD.h"
 #include "FPHUD.generated.h"
 
-class UFPHUDWidgetBase;
 /**
  * 
  */
@@ -25,7 +24,7 @@ public:
 
 	// 현재 활성화된 UI 위젯
 	UPROPERTY()
-	UFPHUDWidgetBase* HUDWidget;
+	TObjectPtr<class UFPHUDWidgetBase> HUDWidget;
 
 	/* 캐릭터 컨트롤러 섹션 */
 	UPROPERTY()
