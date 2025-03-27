@@ -15,19 +15,12 @@ class FPSPROJECT_API UFPCurrentHpWidget : public UFPTextWidgetBase
 {
 	GENERATED_BODY()
 
-protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	
-	/* 캐릭터 스탯 컴포넌트 섹션 */
 protected:
-	UPROPERTY()
-	TObjectPtr<class AFPCharacterBase> PlayerCharacter;
+	virtual void SetEventManager(UFPGlobalEventManager* InEventManager) override;
 	
-	UPROPERTY()
-	TObjectPtr<class UFPCharacterStatComponent> CharacterStatComponent;
-
 	UFUNCTION()
 	void HealthToText(float InHealth);
 };

@@ -5,6 +5,7 @@
 
 #include "FPSProject.h"
 #include "Character/Data/FPCharacterStatData.h"
+#include "Game/FPGlobalEventManager.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
@@ -24,7 +25,8 @@ void UFPCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 void UFPCharacterStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	EventManager = GetWorld()->GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
 }
 
 // 체력이 변경될 때 실행 (클라이언트에서 업데이트)
@@ -33,7 +35,7 @@ void UFPCharacterStatComponent::OnRep_CurrentHealth()
 	UE_LOG(LogTemp, Log, TEXT("CurrentHealth changed"));
 
 	//ToDo: UI 업데이트 필요 시 여기서 처리
-	OnHealthChanged.Broadcast(CurrentHealth); // 체력 변경 이벤트 브로드캐스트
+	EventManager->OnHealthChanged.Broadcast(CurrentHealth); // 체력 변경 이벤트 브로드캐스트
 }
 
 // 서버에서만 실행되는 스탯 변경 함수

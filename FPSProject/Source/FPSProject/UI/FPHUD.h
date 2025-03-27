@@ -24,7 +24,7 @@ public:
 
 	// 현재 활성화된 UI 위젯
 	UPROPERTY()
-	TObjectPtr<class UFPHUDWidgetBase> HUDWidget;
+	TObjectPtr<class UFPHUDWidgetPanel> HUDWidget;
 
 	/* 캐릭터 컨트롤러 섹션 */
 	UPROPERTY()

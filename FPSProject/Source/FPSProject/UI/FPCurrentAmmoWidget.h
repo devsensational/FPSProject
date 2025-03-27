@@ -18,11 +18,10 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+protected:
+	virtual void SetEventManager(UFPGlobalEventManager* InEventManager) override;
 	/* Weapon 레퍼런스 섹션 */
 protected:
-	UPROPERTY()
-	TObjectPtr<class UFPGlobalEventManager> EventManager;
-	
 	UFUNCTION()
 	void AmmoToText(int32 InCurrentAmmo, int32 InCurrentRemainingAmmo);
 };

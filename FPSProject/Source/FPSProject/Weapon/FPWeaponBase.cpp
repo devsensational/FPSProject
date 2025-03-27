@@ -31,12 +31,6 @@ AFPWeaponBase::AFPWeaponBase()
 	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
 	
 	SetCollisionProfile(); // 콜리전 프로필 설정
-
-	// 이벤트매니저 레퍼런스 바인딩
-	if (IsRunningGame())
-	{
-		EventManager = GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
-	}
 	
 }
 
@@ -73,6 +67,9 @@ void AFPWeaponBase::BeginPlay()
 	{
 		GetWorld()->GetAuthGameMode<AFPGameMode>()->RegisterWeaponID(this);
 	}
+	
+	// 이벤트매니저 레퍼런스 바인딩
+	EventManager = GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
 	
 	// GameInstance 가져오기
 	if (UFPGameInstance* GameInstance = Cast<UFPGameInstance>(GetWorld()->GetGameInstance()))
@@ -126,12 +123,16 @@ void AFPWeaponBase::Attack()
 // 현재 탄약이 서버에서 변경 시 클라이언트에게 전파
 void AFPWeaponBase::OnRep_ReplicateCurrentAmmo()
 {
-	LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
 
 	if (EventManager)
 	{
 		// 탄약 갯수 변경 시 이벤트 호출
 		EventManager->OnAmmoChanged.Broadcast(CurrentAmmo, CurrentRemainingAmmo);
+		LOG_NET(NetworkLog, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
+	}
+	else
+	{
+		LOG_NET(NetworkLog, Log, TEXT("Missing EventManager"));
 	}
 	
 }
@@ -192,6 +193,24 @@ void AFPWeaponBase::SetLootable(bool bValue)
 	SetSphereCollisionEnabled(!bValue);
 }
 
+void AFPWeaponBase::OnMovementModeSwitch(EMovementMode InMovementMode)
+{
+	switch (InMovementMode)
+	{
+	case MOVE_Walking:
+		CurrentAccuracy = Accuracy + 0.1f;
+		break;
+	case MOVE_Falling:
+		break;
+	case MOVE_Flying:
+		break;
+	default:
+		break;
+	}
+
+	CurrentAccuracy = Accuracy;
+}
+
 void AFPWeaponBase::MulticastBindWeapon_Implementation()
 {
 	// Weapon Owner는 3인칭을 표시하지 않음
@@ -218,6 +237,20 @@ void AFPWeaponBase::MulticastDropWeapon_Implementation()
 	ThirdPersonMesh->SetVisibility(true);
 	
 }
+
+
+void AFPWeaponBase::Equip()
+{
+	// Todo: Owner가 장비를 CurrentWeapon에 장착하고, 무기 표시 상태 변경
+	
+}
+
+void AFPWeaponBase::UnEquip()
+{
+	// Todo: Owner가 장비를 CurrentWeapon에서 해제하고, 무기 표시 상태 변경
+	
+}
+
 
 void AFPWeaponBase::Reload()
 {

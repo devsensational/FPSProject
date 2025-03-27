@@ -80,10 +80,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Weapon")
 	float LootableCooldown = 2.0f; // 무기를 버린 후 다시 주울 수 있는 상태로 변하는데 까지 걸리는 시간 
 	
-	virtual void Attack();					// 무기를 사용해서 공격
+	virtual void Attack();	// 무기를 사용해서 공격
+	virtual void Reload();	// 무기 재장전
+	virtual void Equip();	// 소유자가 무기를 손에 듬(CurrentWeapon)
+	virtual void UnEquip(); // 소유자가 무기를 손에서 해제함(PreviousWeapon)
+	
 	virtual void BindReference(TObjectPtr<AFPCharacterBase> NewOwner);	// 무기를 장비, 무기 소유자에 대한 레퍼런스 설정
-	virtual void UnbindReference();					// 무기 장비 해제, 무기 소유자의 레퍼런스 해제
-	virtual void Reload();
+	virtual void UnbindReference();										// 무기 장비 해제, 무기 소유자의 레퍼런스 해제
 
 protected:
 	FTimerHandle TimerHandle;
@@ -116,13 +119,14 @@ public:
 
 	EFPWeaponType GetType() const { return Type; }
 	float GetBeforeFireTime() const { return BeforeFireTime; }
-	
+
+	void OnMovementModeSwitch(EMovementMode InMovementMode);
 	
 protected:
 	EFPWeaponType Type;
 	float Damage;
 	float Accuracy;
-	float Magazine;
+	float CurrentAccuracy; // 최종 명중률 값
 	float ReloadTime;
 	float RPM;
 	int32 Price;
@@ -135,7 +139,7 @@ protected:
 	UPROPERTY(Replicated)
 	int32 CurrentRemainingAmmo	= MaxRemainingAmmo;
 
-	// 클라이언트에서 서버로 보내는 명령의 수를 제한함과 동시에,
+	// ★ 클라이언트에서 서버로 보내는 명령의 수를 제한함과 동시에,
 	// 서버에서 무기의 공격 시간을 체크함으로써 치트를 사용하여 총의 연사속도를 변경하는 것을 막기 위한 설계
 	float FireDelay = 0;		// 총기 발사 간격 내부 쿨타임(클라이언트)
 	float BeforeFireTime = 0;	// 총기 발사 시 서버에서 현재 시간과 이전 시간을 비교하기 위한 변수

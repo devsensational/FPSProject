@@ -2,25 +2,14 @@
 
 
 #include "UI/FPCurrentAmmoWidget.h"
+
+#include "FPSProject.h"
 #include "Game/FPGlobalEventManager.h"
 
 void UFPCurrentAmmoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (IsRunningGame())
-	{
-		EventManager = GetGameInstance()->GetSubsystem<UFPGlobalEventManager>();
-	}
-	
-	if (EventManager)
-	{
-		EventManager->OnAmmoChanged.AddDynamic(this, &UFPCurrentAmmoWidget::AmmoToText);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed get Event manager"));
-	}
 }
 
 void UFPCurrentAmmoWidget::NativeDestruct()
@@ -29,6 +18,19 @@ void UFPCurrentAmmoWidget::NativeDestruct()
 	if (EventManager)
 	{
 		EventManager->OnAmmoChanged.RemoveAll(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Cant find EventManager"));
+	}
+}
+
+void UFPCurrentAmmoWidget::SetEventManager(UFPGlobalEventManager* InEventManager)
+{
+	Super::SetEventManager(InEventManager);
+	if (EventManager)
+	{
+		EventManager->OnAmmoChanged.AddDynamic(this, &UFPCurrentAmmoWidget::AmmoToText);
 	}
 }
 

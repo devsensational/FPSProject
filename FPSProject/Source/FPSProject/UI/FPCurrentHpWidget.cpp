@@ -9,25 +9,21 @@
 void UFPCurrentHpWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (!PlayerController) return;
-	
-
-	PlayerCharacter = Cast<AFPCharacterBase>(PlayerController->GetPawn());
-	if (PlayerCharacter)
-	{
-		CharacterStatComponent = PlayerCharacter->GetCharacterStatComponent();
-		CharacterStatComponent->OnHealthChanged.AddDynamic(this, &UFPCurrentHpWidget::HealthToText);
-	}
 }
 
 void UFPCurrentHpWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
-	if (CharacterStatComponent)
+	if (EventManager)
 	{
-		CharacterStatComponent->OnHealthChanged.RemoveAll(this);
+		EventManager->OnHealthChanged.RemoveAll(this);
 	}
+}
+
+void UFPCurrentHpWidget::SetEventManager(UFPGlobalEventManager* InEventManager)
+{
+	Super::SetEventManager(InEventManager);
+	EventManager->OnHealthChanged.AddDynamic(this, &UFPCurrentHpWidget::HealthToText);
 }
 
 void UFPCurrentHpWidget::HealthToText(float InHealth)

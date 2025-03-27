@@ -8,8 +8,6 @@
 
 class UFPCharacterStatData;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPSPROJECT_API UFPCharacterStatComponent : public UActorComponent
 {
@@ -24,15 +22,14 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+private:
+	TObjectPtr<class UFPGlobalEventManager> EventManager;
 	
 	/* 캐릭터 스탯 관련 섹션 */
 public:
 	// 최대 체력
 	float MaxHealth = 100;
-	
-	// 체력 변경 이벤트 (캐릭터 또는 컨트롤러에서 바인딩하여 사용)
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnHealthChanged OnHealthChanged;
 	
 	// 현재 체력 (네트워크 동기화)
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_CurrentHealth, VisibleInstanceOnly, BlueprintReadOnly, Category = "Stat")

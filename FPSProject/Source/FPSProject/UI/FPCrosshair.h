@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "FPHUDWidgetBase.h"
 #include "FPCrosshair.generated.h"
 
 class UImage;
@@ -11,7 +11,7 @@ class UImage;
  * 
  */
 UCLASS()
-class FPSPROJECT_API UFPCrosshair : public UUserWidget
+class FPSPROJECT_API UFPCrosshair : public UFPHUDWidgetBase
 {
 	GENERATED_BODY()
 	
