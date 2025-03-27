@@ -24,13 +24,13 @@ AFPCharacterBase::AFPCharacterBase()
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
 	CollisionSphere->SetupAttachment(RootComponent);
 	CollisionSphere->SetSphereRadius(CollisionRadius); // 반지름 설정
-	CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
+	CollisionSphere->SetHiddenInGame(true); 
 	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
 
 	HitBoxCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HitBoxCollision"));
 	HitBoxCollision->SetupAttachment(RootComponent);
 	HitBoxCollision->SetCapsuleHalfHeight(HitBoxSize);
-	HitBoxCollision->SetHiddenInGame(false);
+	HitBoxCollision->SetHiddenInGame(true);
 	HitBoxCollision->SetGenerateOverlapEvents(true);
 	
 	SetCollisionProfile(); // 콜리전 프로필 설정
@@ -49,6 +49,7 @@ void AFPCharacterBase::BeginPlay()
 	{
 		ServerInitializeActor();
 	}
+
 	
 }
 

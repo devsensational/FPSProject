@@ -96,7 +96,9 @@ void AFPWeaponBase::BeginPlay()
 	{
 			UE_LOG(LogTemp, Warning, TEXT("Weapon stats not loaded: %s"), *Name.ToString());
 	}
+
 }
+
 
 void AFPWeaponBase::SetCollisionProfile() const
 {

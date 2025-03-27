@@ -30,4 +30,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UFPTextWidgetBase> WBP_CurrentAmmo;
 	
+	// 방향 지시 UI 위젯
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UFPDirectionIndicator> WBP_DirectionIndicator;
+	
 };

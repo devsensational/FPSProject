@@ -4,6 +4,7 @@
 #include "FPHUDWidgetPanel.h"
 
 #include "FPCrosshair.h"
+#include "FPDirectionIndicator.h"
 #include "FPTextWidgetBase.h"
 
 void UFPHUDWidgetPanel::NativeConstruct()
@@ -27,6 +28,11 @@ void UFPHUDWidgetPanel::EventBindInitialize()
 	if (WBP_Crosshair)
 	{
 		WBP_Crosshair->SetEventManager(EventManager);
+	}
+
+	if (WBP_DirectionIndicator)
+	{
+		WBP_DirectionIndicator->SetEventManager(EventManager);
 	}
 	
 	if (IsRunningGame())
