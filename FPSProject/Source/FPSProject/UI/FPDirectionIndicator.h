@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FPHUDWidgetBase.h"
+#include "FPHUDLayout.h"
 #include "Blueprint/UserWidget.h"
 #include "FPDirectionIndicator.generated.h"
 
@@ -12,7 +12,7 @@ class UImage;
  * 
  */
 UCLASS()
-class FPSPROJECT_API UFPDirectionIndicator : public UFPHUDWidgetBase
+class FPSPROJECT_API UFPDirectionIndicator : public UFPHUDLayout
 {
 	GENERATED_BODY()
 
@@ -27,6 +27,9 @@ protected:
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AActor> TargetActor;
+
+	UPROPERTY()
+	TObjectPtr<APlayerController> PlayerController; 
 
 public:
 	void SetTargetLocation(AActor* InTargetActor);

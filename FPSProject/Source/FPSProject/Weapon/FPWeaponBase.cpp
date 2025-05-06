@@ -5,10 +5,12 @@
 
 #include "FPSProject.h"
 #include "Character/FPCharacterBase.h"
+#include "Component/FPInteractableComponent.h"
 #include "Game/FPGameInstance.h"
 #include "Game/FPGameMode.h"
 #include "GameData/FPWeaponStats.h"
 #include "Net/UnrealNetwork.h"
+#include "Physics/FPCollision.h"
 
 // Sets default values
 AFPWeaponBase::AFPWeaponBase()
@@ -23,14 +25,20 @@ AFPWeaponBase::AFPWeaponBase()
 	ThirdPersonMesh->SetOwnerNoSee(true); // 소유자는 보지 못하도록 설정
 
 	// 콜리전 구 생성 및 설정
-	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-	CollisionSphere->SetupAttachment(ThirdPersonMesh);
-	CollisionSphere->SetSphereRadius(50.0f); // 반지름 설정
-	CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
-	CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
+	//CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
+	//CollisionSphere->SetupAttachment(ThirdPersonMesh);
+	//CollisionSphere->SetSphereRadius(50.0f); // 반지름 설정
+	//CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
+	//CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
+
+	// 키보드 상호작용 섹션
+	InteractableComponent = CreateDefaultSubobject<UFPInteractableComponent>(TEXT("InteractBox"));
+	InteractableComponent->SetupAttachment(RootComponent);
+	InteractableComponent->SetHiddenInGame(false); // 게임 중 보이도록 설정
+	InteractableComponent->SetGenerateOverlapEvents(true);
 	
-	SetCollisionProfile(); // 콜리전 프로필 설정
-	
+	//
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AFPWeaponBase::Destroyed()
@@ -94,16 +102,11 @@ void AFPWeaponBase::BeginPlay()
 	}
 }
 
-void AFPWeaponBase::SetCollisionProfile() const
-{
-	CollisionSphere->SetCollisionProfileName(TEXT("WeaponPreset"));
-}
-
 void AFPWeaponBase::SetSphereCollisionEnabled(bool bEnabled) const
 {
-	if (CollisionSphere)
+	if (InteractableComponent)
 	{
-		CollisionSphere->SetCollisionEnabled(bEnabled ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+		InteractableComponent->SetCollisionEnabled(bEnabled ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 	}
 }
 
@@ -229,5 +232,17 @@ void AFPWeaponBase::ExecuteReload()
 	int32 ReloadAmmoCount = MaxAmmo - CurrentAmmo;
 	CurrentAmmo = FMath::Clamp(CurrentAmmo + CurrentRemainingAmmo, 0, MaxAmmo);
 	CurrentRemainingAmmo = FMath::Clamp( CurrentRemainingAmmo - ReloadAmmoCount, 0, MaxRemainingAmmo);
+	
+}
+
+void AFPWeaponBase::Interact_Implementation(AFPCharacterBase* Interactor)
+{
+	if (!Interactor) return;
+
+	// 상호작용을 수행한 액터에게 이동함으로써 아이템 줍기 실행
+	FVector TargetLocation = Interactor->GetActorLocation();
+	SetActorLocation(TargetLocation);
+	
+	UE_LOG(LogTemp, Log, TEXT("아이템이 줍혔습니다."));
 	
 }

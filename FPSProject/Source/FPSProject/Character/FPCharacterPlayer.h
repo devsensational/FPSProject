@@ -10,6 +10,7 @@
 #include "FPCharacterPlayer.generated.h"
 
 
+class UCameraComponent;
 /**
  * 
  */
@@ -20,6 +21,8 @@ class FPSPROJECT_API AFPCharacterPlayer : public AFPCharacterBase
 
 public:
 	AFPCharacterPlayer();
+
+	virtual void Tick(float DeltaSeconds) override;
 	
 	/* 언리얼 라이프사이클 */
 protected:
@@ -75,6 +78,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> DropCurrentWeaponAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> IntercatAction;
 
 	/* Wrapper */
 	FORCEINLINE void EquipPrimaryWeaponWrapper()	{ EquipWeapon(EFPWeaponType::WT_Primary); }
@@ -85,4 +91,23 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void virtual Jump() override;
+
+	/* 상호작용 섹션 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	TObjectPtr<UCameraComponent> FollowCamera;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interact")
+	float InteractRange = 100.f;
+	
+protected:
+	void TryInteract();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTryInteract();
+	void PerformTryInteract();
+
+private:
+	UPROPERTY()
+	TObjectPtr<UFPInteractableComponent> LastHighlightedComp;
 };

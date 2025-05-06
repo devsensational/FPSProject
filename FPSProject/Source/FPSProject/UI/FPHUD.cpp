@@ -3,7 +3,7 @@
 
 #include "UI/FPHUD.h"
 
-#include "FPHUDWidgetBase.h"
+#include "FPHUDLayout.h"
 #include "Blueprint/UserWidget.h"
 
 void AFPHUD::BeginPlay()
@@ -12,7 +12,7 @@ void AFPHUD::BeginPlay()
 
 	if (HUDWidgetClass)
 	{
-		HUDWidget = Cast<UFPHUDWidgetBase>(CreateWidget<UUserWidget>(GetWorld(), HUDWidgetClass));
+		HUDWidget = Cast<UFPHUDLayout>(CreateWidget<UUserWidget>(GetWorld(), HUDWidgetClass));
 		if (HUDWidget)
 		{
 			HUDWidget->AddToViewport();

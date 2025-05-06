@@ -20,6 +20,18 @@ void UFPCrosshair::NativeConstruct()
 	SetCrosshairColor(255, 0 ,0, 1.0f);
 }
 
+void UFPCrosshair::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	
+	//float Spread = *CharacterAccuracy * SpreadMultiplier;
+	float Spread = 1.0f;
+	if (CrosshairTop)    CrosshairTop->SetRenderTranslation(FVector2D(0, -Spread));
+	if (CrosshairBottom) CrosshairBottom->SetRenderTranslation(FVector2D(0, Spread));
+	if (CrosshairLeft)   CrosshairLeft->SetRenderTranslation(FVector2D(-Spread, 0));
+	if (CrosshairRight)  CrosshairRight->SetRenderTranslation(FVector2D(Spread, 0));
+}
+
 void UFPCrosshair::SetCrosshairSize(float Width, float Height)
 {
 	const FVector2D NewSize(Width, Height);
@@ -38,8 +50,6 @@ void UFPCrosshair::SetCrosshairColor(float R, float G, float B, float A)
 		Element->SetColorAndOpacity(NewColor);
 	}
 }
-
-
 void UFPCrosshair::UpdateCrosshairSpread(float Accuracy)
 {
 	const float Spread = Accuracy * SpreadMultiplier;

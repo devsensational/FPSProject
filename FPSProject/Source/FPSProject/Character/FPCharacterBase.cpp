@@ -19,6 +19,14 @@ AFPCharacterBase::AFPCharacterBase()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+
+	// 캐릭터 회전 세팅
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+
+	// 움직임시 자동 회전 OFF
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	
 	// 콜리전 구 생성 및 설정
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
@@ -65,7 +73,7 @@ void AFPCharacterBase::Destroyed()
 	
 	if (HasAuthority())
 	{
-		GameMode->UnregisterCharacterReference(this);
+		if (GameMode) GameMode->UnregisterCharacterReference(this);
 	}
 }
 
@@ -80,7 +88,7 @@ void AFPCharacterBase::ServerInitializeActor()
 	// 오버랩 이벤트 바인딩
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereBeginOverlap);
 	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AFPCharacterBase::OnSphereEndOverlap);
-
+	
 	// 게임모드 레퍼런스 바인딩
 	GameMode = Cast<AFPGameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
@@ -170,7 +178,7 @@ void AFPCharacterBase::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompone
 
 void AFPCharacterBase::SetCollisionProfile()
 {
-	CollisionSphere->SetCollisionProfileName(TEXT("WeaponPreset"));
+	CollisionSphere->SetCollisionProfileName(CPROFILE_FPINTERACTTRIGGER);
 	HitBoxCollision->SetCollisionProfileName(CPROFILE_FPHITBOX);
 }
 

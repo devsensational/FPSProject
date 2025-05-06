@@ -4,10 +4,13 @@
 #include "Character/FPCharacterPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "FPSProject.h"
 #include "InputMappingContext.h"
 #include "Camera/CameraComponent.h"
+#include "Component/FPInteractableComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Physics/FPCollision.h"
 #include "Weapon/FPWeaponBase.h"
 
 //생성자
@@ -22,6 +25,64 @@ AFPCharacterPlayer::AFPCharacterPlayer()
 	// 3인칭 캐릭터 설정
 	//ThirdPersonMesh = CharacterMeshes; // 캐릭터 여러개로 만들 시 수정 해야 함
 	GetMesh()->SetOwnerNoSee(true);
+
+	//상호작용 섹션
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(GetMesh());
+	FollowCamera->bUsePawnControlRotation = true;
+	
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AFPCharacterPlayer::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	/* 상호작용을 위한 Ray 발사 섹션 */
+	if (IsLocallyControlled())
+	{
+		FVector Start = FollowCamera->GetComponentLocation();
+		FVector End = Start + FollowCamera->GetForwardVector() * InteractRange;
+
+		FHitResult Hit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, CCHANNEL_FPINTERACT, Params))
+		{
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor)
+			{
+				UFPInteractableComponent* InteractableComp = HitActor->FindComponentByClass<UFPInteractableComponent>();
+
+				if (InteractableComp)
+				{
+					// 이전 대상과 다르면 전 대상은 끄기
+					if (LastHighlightedComp && LastHighlightedComp != InteractableComp)
+					{
+						LastHighlightedComp->Highlight(false);
+					}
+
+					// 새 대상 Highlight 켜기
+					InteractableComp->Highlight(true);
+					LastHighlightedComp = InteractableComp;
+
+					return;
+				}
+			}
+		}
+
+		// 부딪힌게 없거나 상호작용 대상이 아니면
+		if (LastHighlightedComp)
+		{
+			LastHighlightedComp->Highlight(false);
+			LastHighlightedComp = nullptr;
+		}
+	}
 }
 
 void AFPCharacterPlayer::BeginPlay()
@@ -97,6 +158,58 @@ void AFPCharacterPlayer::Jump()
 	Super::Jump();
 }
 
+// 상호작용
+void AFPCharacterPlayer::TryInteract()
+{
+	if (HasAuthority()) // 서버라면 직접 상호작용
+	{
+		PerformTryInteract();
+	}
+	else // 클라이언트라면 서버에게 요청
+	{
+		ServerTryInteract();
+	}
+	
+}
+
+void AFPCharacterPlayer::ServerTryInteract_Implementation()
+{
+	PerformTryInteract();
+}
+
+bool AFPCharacterPlayer::ServerTryInteract_Validate()
+{
+	return true;
+}
+
+void AFPCharacterPlayer::PerformTryInteract()
+{
+	FVector Start = FollowCamera->GetComponentLocation();
+	FVector End = Start + FollowCamera->GetForwardVector() * InteractRange;
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	// Hit된 컴포넌트가 FPInteractableComponent 인지 확인
+	
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, CCHANNEL_FPINTERACT, Params))
+	{
+		LOG_NET(NetworkLog, Warning, TEXT("Try Interact"));
+
+		// 부딪힌 컴포넌트가 FPInteractableComponent인지 확인
+		if (UFPInteractableComponent* InteractableComp = Cast<UFPInteractableComponent>(Hit.Component.Get()))
+		{
+			// 상호작용 실행
+			InteractableComp->Interact(this);
+		}
+	}
+	// 디버그 라인 (개발용)
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 1.0f);
+#endif
+}
+
 // Input binding
 void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*	PlayerInputComponent)
 {
@@ -130,6 +243,9 @@ void AFPCharacterPlayer::SetupPlayerInputComponent(UInputComponent*	PlayerInputC
 		
 		//현재 손에 든 무기 버리기
 		EnhancedInputComponent->BindAction(DropCurrentWeaponAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::DropCurrentWeapon);
+
+		//상호작용 하기
+		EnhancedInputComponent->BindAction(IntercatAction, ETriggerEvent::Triggered, this, &AFPCharacterPlayer::TryInteract);
 	}
 	
 	if (bIsLocalPlayer)

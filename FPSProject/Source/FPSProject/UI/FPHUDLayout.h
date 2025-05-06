@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "FPHUDWidgetBase.generated.h"
+#include "FPHUDLayout.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FPSPROJECT_API UFPHUDWidgetBase : public UUserWidget
+class FPSPROJECT_API UFPHUDLayout : public UUserWidget
 {
 	GENERATED_BODY()
 

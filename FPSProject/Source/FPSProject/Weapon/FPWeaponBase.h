@@ -9,7 +9,10 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "Game/FPGameMode.h"
+#include "Interface/FPInteractable.h"
 
+class UBoxComponent;
+class UFPInteractableComponent;
 class AFPCharacterBase;
 
 #include "FPWeaponBase.generated.h"
@@ -35,7 +38,7 @@ enum class EFPWeaponFireType : uint8
 };
 
 UCLASS(Blueprintable)
-class FPSPROJECT_API AFPWeaponBase : public AActor
+class FPSPROJECT_API AFPWeaponBase : public AActor, public IFPInteractable
 {
 	GENERATED_BODY()
 
@@ -53,11 +56,10 @@ protected:
 	
 	/* 무기 Collision 섹션 */
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
-	USphereComponent* CollisionSphere;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
+	//USphereComponent* CollisionSphere;
 	
 private:
-	void SetCollisionProfile() const; //콜리전 Profile 설정
 	void SetSphereCollisionEnabled(bool bEnabled) const; // 콜리전 On/Off 설정
 	
 	
@@ -72,7 +74,15 @@ public:
 
 	
 	/* 무기 상호작용 관련 섹션 */
-	// ToDO: 무기를 사용하는 것은 모두 서버로 부터 호출되며 완료된 것을 브로드캐스트를 통해 서버로 전달해야 함 
+	// 키보드를 이용한 상호작용 컴포넌트
+    virtual void Interact_Implementation(AFPCharacterBase* Interactor) override;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UFPInteractableComponent> InteractableComponent;
+
+	// 상호작용 로직
+	// ToDo: 무기를 사용하는 것은 모두 서버로 부터 호출되며 완료된 것을 브로드캐스트를 통해 서버로 전달해야 함
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Weapon")
 	float LootableCooldown = 2.0f; // 무기를 버린 후 다시 주울 수 있는 상태로 변하는데 까지 걸리는 시간 
@@ -141,7 +151,7 @@ protected:
 	// 무기 Mesh 관련 변수
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	USkeletalMeshComponent* ThirdPersonMesh;
+	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
 
 protected:
 	UFUNCTION()
