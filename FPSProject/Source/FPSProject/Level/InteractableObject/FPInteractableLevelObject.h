@@ -17,13 +17,13 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 	/* Mesh */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	TObjectPtr<UStaticMeshComponent> Mesh;
+	TObjectPtr<UStaticMeshComponent> VisualMesh;
 
 	/* 상호작용 섹션 */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UFPInteractableComponent> InteractableComponent;
 	
 	virtual void Interact_Implementation(AFPCharacterBase* Interactor) override;
