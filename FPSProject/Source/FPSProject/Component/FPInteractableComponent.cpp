@@ -19,14 +19,18 @@ UFPInteractableComponent::UFPInteractableComponent()
 void UFPInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	RootComp = GetOwner()->GetRootComponent(); 
-	if (RootComp)
+	if (AActor* OwnerActor = GetOwner())
 	{
-		// 부착
-		AttachToComponent(RootComp, FAttachmentTransformRules::KeepRelativeTransform);
-	
-		CachedMesh = Cast<UMeshComponent>(RootComp);
-		UE_LOG(LogTemp, Log, TEXT("Find RootComponent!"));
+		if (IFPHasMesh* HasMeshInterface = Cast<IFPHasMesh>(OwnerActor))
+		{
+			CachedMesh = HasMeshInterface->GetMainMesh();
+			UE_LOG(LogTemp, Log, TEXT("Mesh cashed"));
+		}
+		else
+		{
+			// 폴백: 메시 직접 찾기
+			CachedMesh = OwnerActor->FindComponentByClass<UMeshComponent>();
+		}
 	}
 }
 

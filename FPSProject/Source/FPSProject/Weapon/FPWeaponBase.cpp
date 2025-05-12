@@ -24,16 +24,9 @@ AFPWeaponBase::AFPWeaponBase()
 	ThirdPersonMesh->SetupAttachment(RootComponent);
 	ThirdPersonMesh->SetOwnerNoSee(true); // 소유자는 보지 못하도록 설정
 
-	// 콜리전 구 생성 및 설정
-	//CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-	//CollisionSphere->SetupAttachment(ThirdPersonMesh);
-	//CollisionSphere->SetSphereRadius(50.0f); // 반지름 설정
-	//CollisionSphere->SetHiddenInGame(false); // 게임 중 보이도록 설정
-	//CollisionSphere->SetGenerateOverlapEvents(true); // 오버랩 이벤트 생성 활성화
-
 	// 키보드 상호작용 섹션
 	InteractableComponent = CreateDefaultSubobject<UFPInteractableComponent>(TEXT("InteractBox"));
-	InteractableComponent->SetupAttachment(RootComponent);
+	InteractableComponent->SetupAttachment(ThirdPersonMesh);
 	InteractableComponent->SetHiddenInGame(false); // 게임 중 보이도록 설정
 	InteractableComponent->SetGenerateOverlapEvents(true);
 	

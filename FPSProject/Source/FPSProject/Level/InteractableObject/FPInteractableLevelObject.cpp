@@ -7,17 +7,21 @@
 
 AFPInteractableLevelObject::AFPInteractableLevelObject()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// Root
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	
-	// 상호작용 컴포넌트
-	InteractableComponent = CreateDefaultSubobject<UFPInteractableComponent>(TEXT("InteractComponent"));
-	InteractableComponent->SetupAttachment(RootComponent);
-	InteractableComponent->SetHiddenInGame(false); // 게임 중 보이도록 설정
 	
 	// 메시
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	VisualMesh->SetupAttachment(RootComponent);
+	
+	// 상호작용 컴포넌트
+	InteractableComponent = CreateDefaultSubobject<UFPInteractableComponent>(TEXT("InteractComponent"));
+	InteractableComponent->SetupAttachment(VisualMesh);
+	InteractableComponent->SetHiddenInGame(false); // 게임 중 보이도록 설정
+	InteractableComponent->SetGenerateOverlapEvents(true);
+	
 }
 
 void AFPInteractableLevelObject::BeginPlay()

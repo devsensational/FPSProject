@@ -22,25 +22,20 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	/* Mesh */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	TObjectPtr<UStaticMeshComponent> DoorPivot;
+	
 	/* 문 상호작용 (토글) */
 public:
 	virtual void Interact_Implementation(AFPCharacterBase* Interactor) override;
 	
 	// 문 열기 / 닫기 (서버에서 호출)// 문 열림 상태 (Replicated)
-	UPROPERTY(ReplicatedUsing = OnRep_DoorState)
+	UPROPERTY(ReplicatedUsing = OnRep_DoorState, BlueprintReadWrite, EditAnywhere)
 	bool bIsOpen;
 	
 	UFUNCTION(BlueprintCallable)
 	void ToggleDoor();
-
-	UPROPERTY()
-	TObjectPtr<UTimelineComponent> DoorTimeline;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UCurveFloat> DoorCurve;
-	
-	UFUNCTION()
-	void HandleDoorRotation(float Value);
 
 	UFUNCTION()
 	void OnRep_DoorState();
@@ -49,8 +44,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerToggleDoor();
 
+	UFUNCTION(BlueprintImplementableEvent)
 	void PlayDoorAnimation(bool bOpen);
-	
-	FRotator ClosedRotation;
-	FRotator OpenRotation;
 };

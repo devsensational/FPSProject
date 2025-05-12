@@ -70,7 +70,6 @@ void AFPCharacterPlayer::Tick(float DeltaSeconds)
 					// 새 대상 Highlight 켜기
 					InteractableComp->Highlight(true);
 					LastHighlightedComp = InteractableComp;
-
 					return;
 				}
 			}

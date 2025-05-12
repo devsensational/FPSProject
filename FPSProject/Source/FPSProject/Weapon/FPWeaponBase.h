@@ -9,6 +9,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "Game/FPGameMode.h"
+#include "Interface/FPHasMesh.h"
 #include "Interface/FPInteractable.h"
 
 class UBoxComponent;
@@ -38,7 +39,7 @@ enum class EFPWeaponFireType : uint8
 };
 
 UCLASS(Blueprintable)
-class FPSPROJECT_API AFPWeaponBase : public AActor, public IFPInteractable
+class FPSPROJECT_API AFPWeaponBase : public AActor, public IFPInteractable, public IFPHasMesh
 {
 	GENERATED_BODY()
 
@@ -161,4 +162,7 @@ protected:
 protected:
 	virtual void PlayAnimationAttack();
 	virtual void PlayAnimationReload();
+
+	// HasMesh Interface
+	FORCEINLINE virtual UMeshComponent* GetMainMesh() override { return ThirdPersonMesh; }
 };

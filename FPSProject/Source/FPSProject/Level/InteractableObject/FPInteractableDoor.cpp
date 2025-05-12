@@ -11,23 +11,17 @@ AFPInteractableDoor::AFPInteractableDoor()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	DoorTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DoorTimeline"));
-	
-	// 초기 회전 값 설정 (닫힘)
-	ClosedRotation = FRotator(0.0f, 0.0f, 0.0f);
-	OpenRotation = FRotator(0.0f, 180.0f, 0.0f); // 열릴 때 90도 회전
+	// Mesh
+	DoorPivot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorPivot"));
+	DoorPivot->SetupAttachment(RootComponent);
+	VisualMesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+	VisualMesh->SetupAttachment(DoorPivot);
 }
 
 void AFPInteractableDoor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (DoorCurve)
-	{
-		FOnTimelineFloat TimelineCallback;
-		TimelineCallback.BindUFunction(this, FName("HandleDoorRotation"));
-		DoorTimeline->AddInterpFloat(DoorCurve, TimelineCallback);
-	}
 }
 
 void AFPInteractableDoor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -55,32 +49,9 @@ void AFPInteractableDoor::ToggleDoor()
 	}
 }
 
-void AFPInteractableDoor::HandleDoorRotation(float Value)
-{
-	FRotator NewRotation = FMath::Lerp(ClosedRotation, OpenRotation, Value);
-	VisualMesh->SetRelativeRotation(NewRotation);
-}
-
 void AFPInteractableDoor::OnRep_DoorState()
 {
 	PlayDoorAnimation(bIsOpen);
-}
-
-void AFPInteractableDoor::PlayDoorAnimation(bool bOpen)
-{
-	if (DoorTimeline->IsPlaying())
-	{
-		DoorTimeline->Stop();
-	}
-
-	if (bOpen)
-	{
-		DoorTimeline->PlayFromStart();
-	}
-	else
-	{
-		DoorTimeline->ReverseFromEnd();
-	}
 }
 
 void AFPInteractableDoor::ServerToggleDoor_Implementation()

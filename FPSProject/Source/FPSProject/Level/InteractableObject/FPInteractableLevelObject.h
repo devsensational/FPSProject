@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interface/FPHasMesh.h"
 #include "Interface/FPInteractable.h"
 #include "FPInteractableLevelObject.generated.h"
 
-UCLASS()
-class FPSPROJECT_API AFPInteractableLevelObject : public AActor, public IFPInteractable
+UCLASS(Blueprintable)
+class FPSPROJECT_API AFPInteractableLevelObject : public AActor, public IFPInteractable, public IFPHasMesh
 {
 	GENERATED_BODY()
 	
@@ -25,6 +26,8 @@ protected:
 	/* 상호작용 섹션 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UFPInteractableComponent> InteractableComponent;
-	
+
+	// Interface
 	virtual void Interact_Implementation(AFPCharacterBase* Interactor) override;
+	FORCEINLINE virtual UMeshComponent* GetMainMesh() override { return VisualMesh; }
 };
